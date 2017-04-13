@@ -10,54 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170412213441) do
+ActiveRecord::Schema.define(version: 20170413143520) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "controller_events", force: :cascade do |t|
-    t.string   "controller"
-    t.string   "action"
-    t.string   "path"
-    t.string   "format"
-    t.datetime "start"
-    t.datetime "stop"
-    t.integer  "duration"
-    t.integer  "cycle_transaction_id"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
-  end
 
   create_table "cycle_transactions", force: :cascade do |t|
     t.string   "transaction_type"
     t.string   "name"
     t.datetime "start"
     t.datetime "stop"
-    t.integer  "duration"
-    t.json     "data"
+    t.decimal  "duration"
+    t.jsonb    "events"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
   end
 
-  create_table "sql_events", force: :cascade do |t|
-    t.string   "query"
+  create_table "transaction_events", force: :cascade do |t|
+    t.string   "event_type"
     t.datetime "start"
     t.datetime "stop"
-    t.integer  "duration"
-    t.integer  "cycle_transaction_id"
+    t.decimal  "duration"
+    t.jsonb    "data"
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
-  end
-
-  create_table "template_events", force: :cascade do |t|
-    t.text     "file"
-    t.string   "layout"
-    t.datetime "start"
-    t.datetime "stop"
-    t.integer  "duration"
     t.integer  "cycle_transaction_id"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
   end
 
 end

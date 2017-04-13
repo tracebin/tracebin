@@ -1,24 +1,38 @@
-# README
+# tracebin
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## SQL Notes
 
-Things you may want to cover:
+Here is a list of our query plans for aggregating data from the database.
 
-* Ruby version
+### Accessing JSON Objects
 
-* System dependencies
+```sql
+SELECT (data->'sql.active_record'->1->'event_payload'->'query')::text AS sql_payload, AVG(duration)
+  FROM cycle_transactions
+  GROUP BY sql_payload;
+```
 
-* Configuration
+The above query takes an average of about 3.9ms. Note that we're only retrieving the first element of each `sql.active_record` array. To do that, we need to aggregate on the set:
 
-* Database creation
+```sql
+SELECT id, (event->'event_payload'->'query')::text AS query, AVG(duration)
+  FROM (
+    SELECT id, json_array_elements(data->'sql.active_record') AS event, duration
+      FROM cycle_transactions
+  ) AS elements
+  GROUP BY id, query;
+```
 
-* Database initialization
+This takes an average of 5ms.
 
-* How to run the test suite
+### Using JOINs
 
-* Services (job queues, cache servers, search engines, etc.)
+```sql
+SELECT ct.id, sql_events.query, AVG(sql_events.duration)
+  FROM sql_events
+  INNER JOIN cycle_transactions AS ct
+    ON ct.id = sql_events.cycle_transaction_id
+  GROUP BY ct.id, query;
+```
 
-* Deployment instructions
-
-* ...
+This takes a 1.25ms on average.
