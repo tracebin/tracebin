@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170413143520) do
+ActiveRecord::Schema.define(version: 20170413154937) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,15 +26,7 @@ ActiveRecord::Schema.define(version: 20170413143520) do
     t.datetime "updated_at",       null: false
   end
 
-  create_table "transaction_events", force: :cascade do |t|
-    t.string   "event_type"
-    t.datetime "start"
-    t.datetime "stop"
-    t.decimal  "duration"
-    t.jsonb    "data"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
-    t.integer  "cycle_transaction_id"
-  end
+# Could not dump table "transaction_events" because of following StandardError
+#   Unknown type 'transaction_event_type' for column 'event_type'
 
 end

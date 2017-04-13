@@ -1,10 +1,12 @@
 class EventsSaveJob < ApplicationJob
   queue_as :default
 
-  def perform(cycle_transaction)
-    return unless cycle_transaction.events.present?
-    cycle_transaction.events.each do |event|
-      cycle_transaction.transaction_events.create event
+  def perform(ct_id, events)
+    return unless events.present?
+
+    events.each do |event|
+      params = event.merge({ cycle_transaction_id: ct_id })
+      TransactionEvent.create params
     end
   end
 end
