@@ -1,0 +1,2 @@
+class SystemHealthSample < ApplicationRecord
+end

@@ -4,9 +4,7 @@ class ReportsController < ActionController::API
     report_klass = payload[:type].classify.constantize
     @report = report_klass.new payload[:data]
 
-    if @report.save && @report.is_a?(CycleTransaction)
-      # EventsSaveJob.perform_later @report
-    end
+    @report.save
   end
 
   private
