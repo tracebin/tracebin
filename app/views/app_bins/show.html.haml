@@ -1,1 +1,26 @@
 = @app_bin.to_param
+
+%table
+  %thead
+    %tr
+      %th Controller#action
+      %th Average Response (ms)
+      %th Total Requests
+      %th Average # Queries
+      %th % in App
+      %th % in SQL
+      %th % in View
+  %tbody
+    - @actions.each do |action, data|
+      - total_time = data['controller_action']['avg_time_spent']
+      - sql_time = data['sql'] ? data['sql']['avg_time_spent'] : 0.0
+      - view_time = data['view'] ? data['view']['avg_time_spent'] : 0.0
+      - app_time = total_time - sql_time - view_time
+      %tr
+        %td= action
+        %td= "%0.2f" % total_time
+        %td= data['controller_action']['total_requests']
+        %td= data['sql']['avg_count']
+        %td= "%0.1f" % (app_time / total_time)
+        %td= "%0.1f" % (sql_time / total_time)
+        %td= "%0.1f" % (view_time / total_time)
