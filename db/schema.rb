@@ -10,10 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170413204947) do
+ActiveRecord::Schema.define(version: 20170414154850) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "app_bins", force: :cascade do |t|
+    t.string   "app_key"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_key"], name: "index_app_bins_on_app_key", using: :btree
+  end
 
   create_table "cycle_transactions", force: :cascade do |t|
     t.string   "transaction_type"
@@ -24,6 +31,8 @@ ActiveRecord::Schema.define(version: 20170413204947) do
     t.jsonb    "events"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
+    t.integer  "app_bin_id"
+    t.index ["app_bin_id"], name: "index_cycle_transactions_on_app_bin_id", using: :btree
   end
 
   create_table "system_health_samples", force: :cascade do |t|
@@ -31,9 +40,13 @@ ActiveRecord::Schema.define(version: 20170413204947) do
     t.jsonb    "metrics"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer  "app_bin_id"
+    t.index ["app_bin_id"], name: "index_system_health_samples_on_app_bin_id", using: :btree
   end
 
 # Could not dump table "transaction_events" because of following StandardError
 #   Unknown type 'transaction_event_type' for column 'event_type'
 
+  add_foreign_key "cycle_transactions", "app_bins"
+  add_foreign_key "system_health_samples", "app_bins"
 end
