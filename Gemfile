@@ -5,7 +5,6 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.1'
 gem 'pg', '~> 0.18'
@@ -18,6 +17,17 @@ gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.2'
 gem 'jquery-rails'
 gem 'turbolinks', '~> 5'
+
+source 'https://rails-assets.org' do
+  gem 'rails-assets-bootstrap'
+  gem 'rails-assets-fontawesome'
+  gem 'rails-assets-datatables.net'
+  gem 'rails-assets-datatables.net-dt'
+  gem 'rails-assets-moment'
+  gem 'rails-assets-chart.js'
+  gem 'rails-assets-d3'
+  gem 'rails-assets-metrics-graphics'
+end
 
 gem 'jbuilder', '~> 2.5'
 # gem 'redis', '~> 3.0'
