@@ -116,10 +116,14 @@ SELECT job_name, event_type, ROUND(AVG(event_count)) AS avg_count, AVG(avg_event
 
 ### Time Series Data
 
+#### Memory Stats
+
 We have a bunch of data points from samples taken about every 10 seconds. We want to aggregate those over some discrete periods of time to represent our datapoints. The first way to do this is to use `date_trunc` to reduce the precision of our `sampled_at` column:
 
 ```sql
-SELECT date_trunc('minute', sampled_at) AS mins, round(avg((metrics->'memory'->>'free_memory')::INTEGER)) AS avg_free
+SELECT
+  date_trunc('minute', sampled_at) AS mins,
+  round(avg((metrics->'memory'->>'free_memory')::INTEGER)) AS avg_free
   FROM system_health_samples
   GROUP BY mins
   ORDER BY mins ASC;
@@ -221,3 +225,44 @@ SELECT
     ON blank_intervals.interval = active_intervals.interval
   ORDER BY blank_intervals.interval ASC;
 ```
+
+#### Requests and Traffic
+
+With this in mind, it should be easy to get some time series data on requests per span of time. Let's also add an additional data point for average response time. We'll start an hourly sample.
+
+```sql
+SELECT
+  date_trunc('hour', start) AS interval,
+  count(*) AS hits
+  FROM cycle_transactions
+  WHERE transaction_type = 'request_response'
+  GROUP BY date_trunc('hour', start)
+  HAVING date_trunc('hour', start) > '2017-04-17 09:00'::timestamp
+  ORDER BY date_trunc('hour', start) ASC;
+```
+
+This is super slow since `transaction_type` isn't indexed. We'll fix that later on.
+
+Let's take it a step further: we can disaggregate by controller/action using either JOINs or our jsonb column. Let's see which is faster.
+
+```sql
+SELECT
+  date_trunc('hour', ct.start) AS interval,
+  te.data->>'controller' AS controller,
+  te.data->>'action' AS action,
+  count(*) AS hits
+  FROM cycle_transactions AS ct
+  INNER JOIN transaction_events AS te
+    ON ct.id = te.cycle_transaction_id
+  WHERE
+    ct.transaction_type = 'request_response' AND
+    te.event_type = 'controller_action'
+  GROUP BY
+    date_trunc('hour', ct.start),
+    controller,
+    action
+  HAVING date_trunc('hour', ct.start) > '2017-04-17 09:00'::timestamp
+  ORDER BY date_trunc('hour', ct.start) ASC;
+```
+
+This is still very slow, but we'll optimize later on. Perhaps we can avoid using a JOIN by changing how the data is structured.
