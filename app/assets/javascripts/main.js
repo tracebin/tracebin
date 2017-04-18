@@ -10,10 +10,8 @@ $(function() {
 
   function handleMemData(timeData, res) {
     var formattedData = timeData.map(function(row) {
-      return [new Date(row[0]), row[1], row[2]]
+      return [new Date(row[0]), row[1], row[2]];
     });
-
-    console.log(formattedData);
 
     var data = new google.visualization.DataTable();
     var options;
@@ -49,7 +47,7 @@ $(function() {
 
   function handleTrafficData(timeData, res) {
     var formattedData = timeData.map(function(row) {
-      return [new Date(row[0]), row[1]]
+      return [new Date(row[0]), row[1], row[2]];
     });
 
     var data = new google.visualization.DataTable();
@@ -58,15 +56,35 @@ $(function() {
 
     data.addColumn('datetime', 'Interval');
     data.addColumn('number', 'Hits');
+    data.addColumn('number', 'Average response time');
 
     data.addRows(formattedData);
 
     options = {
       title: 'Traffic',
-      vAxis: { title: 'Hits' }
+
+      series: {
+        0: { targetAxisIndex: 0 },
+        1: {
+          targetAxisIndex: 1,
+          type: 'line'
+        }
+      },
+
+      seriesType: 'steppedArea',
+
+      vAxis: {
+        0: {
+          title: 'Hits'
+        },
+
+        1: {
+          title: 'Average response time (ms)',
+        }
+      }
     }
 
-    chart = new google.visualization.SteppedAreaChart(document.getElementById('requests'));
+    chart = new google.visualization.ComboChart(document.getElementById('requests'));
 
     chart.draw(data, options);
   }

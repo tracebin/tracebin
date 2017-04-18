@@ -53,14 +53,16 @@ class TrafficMetricsController < ApplicationController
     sql = <<~SQL
       SELECT
         date_trunc('hour', ct.start) AS interval,
-        count(*) AS hits
-        FROM cycle_transactions AS ct
-        WHERE
-          ct.transaction_type = 'request_response'
-        GROUP BY
-          date_trunc('hour', ct.start)
-        HAVING date_trunc('hour', ct.start) > (current_timestamp - interval '1 day')
-        ORDER BY date_trunc('hour', ct.start) ASC;
+        count(*) AS hits,
+        avg(duration) AS avg_response_time
+      FROM cycle_transactions AS ct
+      WHERE
+        ct.app_bin_id = #{ActiveRecord::Base.sanitize @app_bin.id} AND
+        ct.transaction_type = 'request_response' AND
+        ct.start > (current_timestamp - interval '1 day')
+      GROUP BY
+        date_trunc('hour', ct.start)
+      ORDER BY date_trunc('hour', ct.start) ASC;
     SQL
 
     # popular_ca = ActiveRecord::Base.connection.execute popular_ca_sql
@@ -71,7 +73,7 @@ class TrafficMetricsController < ApplicationController
     tuples = ActiveRecord::Base.connection.execute sql
 
     tuples.to_a.map do |tuple|
-      [tuple['interval'], tuple['hits']]
+      [tuple['interval'], tuple['hits'], tuple['avg_response_time'].to_f.round(3)]
     end
     # c_a = {}
 
