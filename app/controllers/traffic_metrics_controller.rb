@@ -50,7 +50,6 @@ class TrafficMetricsController < ApplicationController
 
     # All Endpoints
     #
-
     sql = <<~SQL
       SELECT
         date_trunc('hour', ct.start) AS interval,

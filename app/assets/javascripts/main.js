@@ -9,20 +9,31 @@ $(function() {
   }
 
   function handleMemData(timeData, res) {
-    timeData = parseDates(timeData);
-
-    MG.data_graphic({
-      title: 'Memory Usage',
-      description: 'This is a chart of the amount of memory you\'ve used over a span of time.',
-      data: timeData,
-      width: 600,
-      height: 200,
-      right: 40,
-      target: document.getElementById('mem-info'),
-      x_accessor: 'interval',
-      y_accessor: 'value',
-      y_label: 'MB'
+    var formattedData = timeData.map(function(row) {
+      return [new Date(row[0]), row[1], row[2]]
     });
+
+    console.log(formattedData);
+
+    var data = new google.visualization.DataTable();
+    var options;
+    var chart;
+
+    data.addColumn('datetime', 'Interval');
+    data.addColumn('number', 'Free');
+    data.addColumn('number', 'Used');
+
+    data.addRows(formattedData);
+
+    options = {
+      title: 'Memory Usage',
+      vAxis: { title: 'MB' },
+      isStacked: true
+    }
+
+    chart = new google.visualization.SteppedAreaChart(document.getElementById('mem-info'));
+
+    chart.draw(data, options);
   }
 
   function getMemData() {
@@ -37,32 +48,27 @@ $(function() {
   }
 
   function handleTrafficData(timeData, res) {
-    formattedData = timeData.map(function(row) {
+    var formattedData = timeData.map(function(row) {
       return [new Date(row[0]), row[1]]
     });
 
-    google.charts.load('current', { 'packages': ['corechart'] });
-    google.charts.setOnLoadCallback(drawChart);
+    var data = new google.visualization.DataTable();
+    var options;
+    var chart;
 
-    function drawChart() {
-      var data = new google.visualization.DataTable();
-      var options;
-      var chart;
+    data.addColumn('datetime', 'Interval');
+    data.addColumn('number', 'Hits');
 
-      data.addColumn('datetime', 'Interval');
-      data.addColumn('number', 'Hits');
+    data.addRows(formattedData);
 
-      data.addRows(formattedData);
-
-      options = {
-        title: 'Traffic',
-        vAxis: { title: 'Hits' }
-      }
-
-      chart = new google.visualization.SteppedAreaChart(document.getElementById('requests'));
-
-      chart.draw(data, options);
+    options = {
+      title: 'Traffic',
+      vAxis: { title: 'Hits' }
     }
+
+    chart = new google.visualization.SteppedAreaChart(document.getElementById('requests'));
+
+    chart.draw(data, options);
   }
 
   function getTrafficData() {
@@ -82,6 +88,8 @@ $(function() {
     }
   });
 
-  getTrafficData();
-  getMemData();
+  google.charts.load('current', { 'packages': ['corechart'] });
+
+  google.charts.setOnLoadCallback(getTrafficData);
+  google.charts.setOnLoadCallback(getMemData);
 });

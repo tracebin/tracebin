@@ -29,10 +29,11 @@ class MemoryMetricsController < ApplicationController
     tuples = ActiveRecord::Base.connection.execute sql
 
     tuples.map do |tuple|
-      {
-        interval: tuple['interval'],
-        value: tuple['avg_total'].to_i - tuple['avg_free'].to_i
-      }
+      [
+        tuple['interval'],
+        tuple['avg_free'].to_i,
+        tuple['avg_total'].to_i - tuple['avg_free'].to_i
+      ]
     end
   end
 end
