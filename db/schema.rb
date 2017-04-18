@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170414154850) do
+ActiveRecord::Schema.define(version: 20170417145321) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -33,6 +33,7 @@ ActiveRecord::Schema.define(version: 20170414154850) do
     t.datetime "updated_at",       null: false
     t.integer  "app_bin_id"
     t.index ["app_bin_id"], name: "index_cycle_transactions_on_app_bin_id", using: :btree
+    t.index ["transaction_type"], name: "index_cycle_transactions_on_transaction_type", using: :btree
   end
 
   create_table "system_health_samples", force: :cascade do |t|
