@@ -74,15 +74,10 @@ $(function() {
       seriesType: 'steppedArea',
 
       vAxis: {
-        0: {
-          title: 'Hits'
-        },
-
-        1: {
-          title: 'Average response time (ms)',
-        }
+        0: { title: 'Hits' },
+        1: { title: 'Average response time (ms)', }
       }
-    }
+    };
 
     chart = new google.visualization.ComboChart(document.getElementById('requests'));
 
@@ -100,6 +95,35 @@ $(function() {
     });
   }
 
+  function handleEndpointsIndex(data) {
+    console.log(data);
+    $('#endpoints-index').DataTable({
+      data: data,
+      columns: [
+        { title: 'Endpoint' },
+        { title: 'Average Response Time' },
+        { title: 'Hits' },
+        { title: 'Avg SQL Time' },
+        { title: 'Avg View Time' },
+        { title: 'Avg App Time' },
+        { title: 'Avg Other Time'}
+      ],
+
+      paging: false
+    });
+  }
+
+  function getEndpointsIndex() {
+    $.ajax({
+      method: 'GET',
+      url: window.location.pathname + '/endpoints',
+      cache: false,
+      dataType: 'json',
+
+      success: handleEndpointsIndex
+    });
+  }
+
   $.ajaxSetup({
     headers: {
       'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
@@ -108,6 +132,7 @@ $(function() {
 
   google.charts.load('current', { 'packages': ['corechart'] });
 
+  getEndpointsIndex();
   google.charts.setOnLoadCallback(getTrafficData);
   google.charts.setOnLoadCallback(getMemData);
 });

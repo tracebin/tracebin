@@ -46,19 +46,183 @@ Obviously, we can remove event count and total duration since they're not really
 
 ```sql
 SELECT c, a, event_type, AVG(tot_duration) AS avg_time_spent, ROUND(AVG(event_count)) AS avg_count
-  FROM (
-    SELECT t_id, MAX(ca.controller) AS c, MAX(ca.action) AS a, e.event_type, AVG(e.duration) AS avg_duration, SUM(e.duration) AS tot_duration, COUNT(e.duration) AS event_count
-      FROM transaction_events AS e
-      INNER JOIN (
-        SELECT cycle_transaction_id AS t_id, data->>'controller' AS controller, data->>'action' AS action
-          FROM transaction_events
-          WHERE event_type = 'controller_action'
-      ) AS ca
-        ON ca.t_id = e.cycle_transaction_id
-      GROUP BY t_id, e.event_type
-  ) AS totals
-  GROUP BY c, a, event_type
-  ORDER BY c, a, event_type;
+FROM (
+  SELECT t_id, MAX(ca.controller) AS c, MAX(ca.action) AS a, e.event_type, AVG(e.duration) AS avg_duration, SUM(e.duration) AS tot_duration, COUNT(e.duration) AS event_count
+  FROM transaction_events AS e
+  INNER JOIN (
+    SELECT cycle_transaction_id AS t_id, data->>'controller' AS controller, data->>'action' AS action
+    FROM transaction_events
+    WHERE event_type = 'controller_action'
+  ) AS ca
+    ON ca.t_id = e.cycle_transaction_id
+  GROUP BY t_id, e.event_type
+) AS totals
+GROUP BY c, a, event_type
+ORDER BY c, a, event_type;
+```
+
+### Accessing endpoint data after normalizing the `name` column in `cycle_transactions`
+
+The previous section had some pretty gnarly queries, since we needed to get information about the endpoints from deep in the JSON. We've since modified the `name` column in `cycle_transactions` so that they reflect the name of the endpoint being accessed. In the case of a Rails app, it's the `Controller#action`. We now need a JOIN in order to get these clean groupings.
+
+```sql
+SELECT name
+FROM cycle_transactions
+WHERE
+  transaction_type = 'request_response' AND
+  name <> 'RackTransaction' AND
+  start > (current_timestamp - interval '1 day')
+GROUP BY name;
+```
+
+This returns the names for each endpoint that has been accessed within the last 24 hours. It's currently pretty slow, but we can optimize it later on.
+
+Now let's get some more metrics on these endpoints. We can start by getting all the stuff we can get from the `cycle_transactions` table minus the `events` column.
+
+```sql
+SELECT
+  name AS endpoint,
+  avg(duration) AS avg_response_time,
+  count(*) AS total_requests
+FROM cycle_transactions
+WHERE
+  transaction_type = 'request_response' AND
+  name <> 'RackTransaction' AND
+  start > (current_timestamp - interval '1 day')
+GROUP BY name
+ORDER BY name;
+```
+
+JOINing with the `transaction_events` table might be a little tricky, especially since we want to keep our aggregates in tact. Instead, let's perform a second query to gather the events and average them out by type. We'll need a JOIN here to make it easy to group by the endpoint. We'll also need to create a virtual table in order to get the average time in each event type.
+
+```sql
+WITH event_durations AS (
+  SELECT
+    ct.id,
+    ct.name AS endpoint,
+    te.event_type,
+    sum(te.duration) AS total_event_type_duration,
+    count(*) AS event_type_count
+  FROM cycle_transactions AS ct
+    INNER JOIN transaction_events AS te
+      ON ct.id = te.cycle_transaction_id
+  WHERE
+    ct.transaction_type = 'request_response' AND
+    ct.name <> 'RackTransaction' AND
+    ct.start > (current_timestamp - interval '1 day')
+  GROUP BY ct.id, endpoint, event_type
+)
+SELECT
+  endpoint,
+  event_type,
+  avg(total_event_type_duration) AS avg_duration,
+  round(avg(event_type_count)) AS avg_count
+FROM event_durations
+GROUP BY endpoint, event_type
+ORDER BY endpoint, event_type;
+```
+
+There is a slight problem with this: if an event type for a particular transaction doesn't exist, then it isn't reflected in our results. In order to do this, it might be easier to delve into our jsonb column of our `cycle_transactions` table. We still need to do separate queries, but we may have the opportunity to join them into one query in the end.
+
+```postgresql
+SELECT
+  name AS endpoint,
+  duration,
+  (
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
+  ) AS time_in_sql,
+  (
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'view') AS x(duration NUMERIC)
+  ) AS time_in_view,
+  (
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'other') AS x(duration NUMERIC)
+  ) AS time_in_other
+FROM cycle_transactions
+WHERE
+  transaction_type = 'request_response' AND
+  name <> 'RackTransaction' AND
+  start > (current_timestamp - interval '1 day');
+```
+
+This returns each endpoint hit, with the time it spent in SQL, view, etc.. Now let's aggregate that with our totals:
+
+```postgresql
+WITH event_timings AS (
+  SELECT
+    name AS endpoint,
+    duration,
+    (
+      SELECT sum(duration)
+      FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
+    ) AS time_in_sql,
+    (
+      SELECT sum(duration)
+      FROM jsonb_to_recordset(events->'view') AS x(duration NUMERIC)
+    ) AS time_in_view,
+    (
+      SELECT sum(duration)
+      FROM
+        jsonb_to_recordset(events->'controller_action')
+          AS x(duration NUMERIC)
+    ) AS time_in_controller,
+    (
+      SELECT sum(duration)
+      FROM jsonb_to_recordset(events->'other') AS x(duration NUMERIC)
+    ) AS time_in_other
+  FROM cycle_transactions
+  WHERE
+    transaction_type = 'request_response' AND
+    name <> 'RackTransaction' AND
+    start > (current_timestamp - interval '1 day')
+)
+SELECT
+  endpoint,
+  count(*) AS hits,
+  avg(duration) AS avg_duration,
+  avg(time_in_sql) AS avg_time_in_sql,
+  avg(time_in_view) AS avg_time_in_view,
+  avg(time_in_controller) AS avg_time_in_controller,
+  avg(time_in_other) AS avg_time_in_other
+FROM event_timings
+GROUP BY endpoint
+ORDER BY hits DESC;
+```
+
+We can cut down on the time this query takes (about a half second in our test environment) by combining these queries:
+
+```postgresql
+SELECT
+  name AS endpoint,
+  avg(duration) AS avg_duration,
+  count(*) AS hits,
+  avg((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
+  )) AS avg_time_in_sql,
+  avg((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'view') AS x(duration NUMERIC)
+  )) AS avg_time_in_view,
+  avg((
+    SELECT sum(duration)
+    FROM
+      jsonb_to_recordset(events->'controller_action')
+        AS x(duration NUMERIC)
+  )) AS avg_time_in_controller,
+  avg((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'other') AS x(duration NUMERIC)
+  )) AS avg_time_in_other
+FROM cycle_transactions
+WHERE
+  transaction_type = 'request_response' AND
+  name <> 'RackTransaction' AND
+  start > (current_timestamp - interval '1 day')
+GROUP BY endpoint
+ORDER BY hits DESC;
 ```
 
 ### Background Jobs
@@ -266,3 +430,20 @@ SELECT
 ```
 
 This is still very slow, but we'll optimize later on. Perhaps we can avoid using a JOIN by changing how the data is structured.
+
+```ruby
+a.each do |t|
+  if t.events.is_a? Array
+    event_dump = t.events
+
+    new_event_data = {
+      sql: events_of_type(event_dump, 'sql'),
+      view: events_of_type(event_dump, 'view'),
+      controller_action: events_of_type(event_dump, 'controller_action'),
+      other: other_events_from(event_dump)
+    }
+
+    t.update events: new_event_data
+  end
+end
+```

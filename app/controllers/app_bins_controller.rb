@@ -2,35 +2,6 @@ class AppBinsController < ApplicationController
   before_action :set_app_bin
 
   def show
-    endpoint_sql = <<~SQL
-      SELECT c, a, event_type, AVG(tot_duration) AS avg_time_spent, ROUND(AVG(event_count)) AS avg_count, COUNT(*) AS total_requests
-        FROM (
-          SELECT t_id, ca.controller AS c, ca.action AS a, e.event_type, AVG(e.duration) AS avg_duration, SUM(e.duration) AS tot_duration, COUNT(e.duration) AS event_count
-            FROM transaction_events AS e
-            INNER JOIN (
-              SELECT cycle_transaction_id AS t_id, data->>'controller' AS controller, data->>'action' AS action
-                FROM transaction_events
-                WHERE event_type = 'controller_action'
-            ) AS ca
-              ON ca.t_id = e.cycle_transaction_id
-            GROUP BY t_id, ca.controller, ca.action, e.event_type
-        ) AS totals
-        GROUP BY c, a, event_type
-        ORDER BY total_requests DESC, c, a, event_type;
-    SQL
-
-    endpoint_tuples = ActiveRecord::Base.connection.execute endpoint_sql
-    @actions = {}
-    endpoint_tuples.each do |tuple|
-      c_a = "#{tuple['c']}##{tuple['a']}"
-      @actions[c_a] ||= {}
-      event_values = Hash[tuple.slice('avg_time_spent', 'avg_count', 'total_requests').
-        map do |k, v|
-          [k, v.to_i == v.to_f ? v.to_i : v.to_f]
-        end]
-        @actions[c_a][tuple['event_type']] = event_values
-    end
-
     job_agg_sql = <<~SQL
       SELECT name AS job_name, COUNT(*) AS total_executions, AVG(duration) AS avg_duration
         FROM cycle_transactions

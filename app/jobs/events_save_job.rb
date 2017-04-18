@@ -8,7 +8,7 @@ class EventsSaveJob < ApplicationJob
   def perform(ct_id, events)
     return unless events.present?
 
-    events.each do |event|
+    events.values.flatten.each do |event|
       params = event.merge({ cycle_transaction_id: ct_id })
       TransactionEvent.create params
     end
