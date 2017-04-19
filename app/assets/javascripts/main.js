@@ -127,6 +127,38 @@ $(function() {
     });
   }
 
+  function handleBackgroundJobsIndex(data) {
+    $('#background-jobs-index').DataTable({
+      data: data,
+      columns: [
+        { title: 'Job Name' },
+        { title: 'Average Job Time' },
+        { title: 'Hits' },
+        { title: 'Avg SQL Time' },
+        { title: 'Avg View Time' },
+        { title: 'Avg App Time' },
+        { title: 'Avg Other Time'}
+      ],
+
+      order: [[2, 'desc']],
+
+      paging: false,
+      searching: false,
+      bInfo: false
+    });
+  }
+
+  function getBackgroundJobsIndex() {
+    $.ajax({
+      method: 'GET',
+      url: window.location.pathname + '/background_jobs',
+      cache: false,
+      dataType: 'json',
+
+      success: handleBackgroundJobsIndex
+    });
+  }
+
   $.ajaxSetup({
     headers: {
       'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
@@ -136,6 +168,7 @@ $(function() {
   google.charts.load('current', { 'packages': ['corechart'] });
 
   getEndpointsIndex();
+  getBackgroundJobsIndex();
   google.charts.setOnLoadCallback(getTrafficData);
   google.charts.setOnLoadCallback(getMemData);
 });

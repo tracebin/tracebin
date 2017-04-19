@@ -10,25 +10,7 @@
 
 %h2 Background Jobs
 
-%table
-  %thead
-    %tr
-      %th Job Name
-      %th Avg Execution Time
-      %th Total Executions
-      %th % in Job
-      %th % in SQL
-      %th % in View
-  %tbody
-    - @jobs.each do |job|
-      - app_time = job[:avg_duration] - job[:avg_sql] - job[:avg_view]
-      %tr
-        %td= job[:job_name]
-        %td= "%0.3f" % job[:avg_duration]
-        %td= job[:total_executions]
-        %td= (app_time / job[:avg_duration] * 100).round 1
-        %td= (job[:avg_sql] / job[:avg_duration] * 100).round 1
-        %td= (job[:avg_view] / job[:avg_duration] * 100).round 1
+%table#background-jobs-index
 
 %h2 System Info
 

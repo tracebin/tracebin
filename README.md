@@ -231,27 +231,27 @@ Let's first group by ID, just to see what our transactions looks like. We want a
 
 ```sql
 SELECT ct.id AS ct_id, ct.name AS job_name, MAX(ct.duration) AS job_duration, te.event_type, COUNT(event_type) AS event_count, MAX(te.duration) AS avg_event_duration, SUM(te.duration) AS total_event_duration
-  FROM cycle_transactions AS ct
-  LEFT JOIN transaction_events AS te
-    ON ct.id = te.cycle_transaction_id
-  WHERE ct.transaction_type = 'background_job'
-  GROUP BY ct_id, job_name, event_type;
+FROM cycle_transactions AS ct
+LEFT JOIN transaction_events AS te
+  ON ct.id = te.cycle_transaction_id
+WHERE ct.transaction_type = 'background_job'
+GROUP BY ct_id, job_name, event_type;
 ```
 
 Now let's aggregate over this dataset, averaging out the averages for each job type:
 
 ```sql
 SELECT COUNT(ct_id) AS total_executions, job_name, AVG(job_duration) AS avg_job_duration, event_type, ROUND(AVG(event_count)) AS avg_count, AVG(avg_event_duration) AS avg_duration_per_event, AVG(total_event_duration) AS avg_duration_per_event_type
-  FROM (
-    SELECT ct.id AS ct_id, ct.name AS job_name, MAX(ct.duration) AS job_duration, te.event_type, COUNT(event_type) AS event_count, MAX(te.duration) AS avg_event_duration, SUM(te.duration) AS total_event_duration
-      FROM cycle_transactions AS ct
-      LEFT JOIN transaction_events AS te
-        ON ct.id = te.cycle_transaction_id
-      WHERE ct.transaction_type = 'background_job'
-      GROUP BY ct_id, job_name, event_type
-  ) AS events_per_job
-  GROUP BY job_name, event_type
-  ORDER BY total_executions DESC;
+FROM (
+  SELECT ct.id AS ct_id, ct.name AS job_name, MAX(ct.duration) AS job_duration, te.event_type, COUNT(event_type) AS event_count, MAX(te.duration) AS avg_event_duration, SUM(te.duration) AS total_event_duration
+    FROM cycle_transactions AS ct
+    LEFT JOIN transaction_events AS te
+      ON ct.id = te.cycle_transaction_id
+    WHERE ct.transaction_type = 'background_job'
+    GROUP BY ct_id, job_name, event_type
+) AS events_per_job
+GROUP BY job_name, event_type
+ORDER BY total_executions DESC;
 ```
 
 This is great, but we might want to consider using two queries, since we want separate groupings for per-job averages and per-event averages. This will also simplify our queries in general. First, let's find the average time spent per job:
@@ -267,16 +267,51 @@ So far so good. Now we can slightly simplify our gnarly query from before to exc
 
 ```sql
 SELECT job_name, event_type, ROUND(AVG(event_count)) AS avg_count, AVG(avg_event_duration) AS avg_duration_per_event, AVG(total_event_duration) AS avg_duration_per_event_type
-  FROM (
-    SELECT ct.id AS ct_id, ct.name AS job_name, MAX(ct.duration) AS job_duration, te.event_type, COUNT(event_type) AS event_count, MAX(te.duration) AS avg_event_duration, SUM(te.duration) AS total_event_duration
-      FROM cycle_transactions AS ct
-      INNER JOIN transaction_events AS te
-        ON ct.id = te.cycle_transaction_id
-      WHERE ct.transaction_type = 'background_job'
-      GROUP BY ct_id, job_name, event_type
-  ) AS events_per_job
-  GROUP BY job_name, event_type;
+FROM (
+  SELECT ct.id AS ct_id, ct.name AS job_name, MAX(ct.duration) AS job_duration, te.event_type, COUNT(event_type) AS event_count, MAX(te.duration) AS avg_event_duration, SUM(te.duration) AS total_event_duration
+    FROM cycle_transactions AS ct
+    INNER JOIN transaction_events AS te
+      ON ct.id = te.cycle_transaction_id
+    WHERE ct.transaction_type = 'background_job'
+    GROUP BY ct_id, job_name, event_type
+) AS events_per_job
+GROUP BY job_name, event_type;
 ```
+
+This is all nice, but as it stands it's not only slow, but requires additional computation after we're done with the query. Let's try to utilize our `jsonb` object to get a single, cleaner, faster query.
+
+```sql
+SELECT
+  name AS job_name,
+  avg(duration) AS avg_duration,
+  count(*) AS hits,
+  avg((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
+  )) AS avg_time_in_sql,
+  avg((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'view') AS x(duration NUMERIC)
+  )) AS avg_time_in_view,
+  avg((
+    SELECT sum(duration)
+    FROM
+      jsonb_to_recordset(events->'controller_action')
+        AS x(duration NUMERIC)
+  )) AS avg_time_in_controller,
+  avg((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'other') AS x(duration NUMERIC)
+  )) AS avg_time_in_other
+FROM cycle_transactions
+WHERE
+  transaction_type = 'background_job' AND
+  start > (current_timestamp - interval '1 day')
+GROUP BY job_name
+ORDER BY hits DESC;
+```
+
+This is almost 1/4 of our previous query's time, and we get all the data we need right off the bat!
 
 ### Time Series Data
 

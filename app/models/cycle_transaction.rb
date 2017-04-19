@@ -2,6 +2,11 @@ class CycleTransaction < ApplicationRecord
   has_many :transaction_events
   belongs_to :app_bin
 
+  enum transaction_type: {
+    background_job: 'background_job',
+    request_response: 'request_response'
+  }
+
   before_create :organize_events
   after_create :create_transaction_events
 
