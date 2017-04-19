@@ -96,7 +96,6 @@ $(function() {
   }
 
   function handleEndpointsIndex(data) {
-    console.log(data);
     $('#endpoints-index').DataTable({
       data: data,
       columns: [
@@ -109,7 +108,11 @@ $(function() {
         { title: 'Avg Other Time'}
       ],
 
-      paging: false
+      order: [[2, 'desc']],
+
+      paging: false,
+      searching: false,
+      bInfo: false
     });
   }
 

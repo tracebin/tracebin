@@ -1,18 +1,25 @@
 class ReportsController < ActionController::API
-  def create
-    Rails.logger.silence do
-      @app_bin = AppBin.find_by app_key: params[:bin_id]
-      payload = report_params
-      report_table = payload[:type].tableize
-      @report = @app_bin.send(report_table).build payload[:data]
+  before_action :set_app_bin
 
-      @report.save
-    end
+  def create
+    reports = report_params
+
+    ReportsSaveJob.perform_later reports, @app_bin
+
+    render nothing: true, status: :ok
   end
 
   private
 
   def report_params
-    params.require(:report).permit!
+    params.require(:report).map(&:permit!).map(&:to_h)
+  end
+
+  def set_app_bin
+    @app_bin = AppBin.find_by app_key: params[:bin_id]
+
+    if @app_bin.nil?
+      render nothing: true, status: :bad_request
+    end
   end
 end

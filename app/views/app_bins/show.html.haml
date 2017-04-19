@@ -1,5 +1,9 @@
 = @app_bin.to_param
 
+%h2 Overview
+
+%div#requests
+
 %h2 Endpoints
 
 %table#endpoints-index
@@ -26,6 +30,6 @@
         %td= (job[:avg_sql] / job[:avg_duration] * 100).round 1
         %td= (job[:avg_view] / job[:avg_duration] * 100).round 1
 
-%div#requests
+%h2 System Info
 
 %div#mem-info

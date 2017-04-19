@@ -37,6 +37,7 @@ class EndpointsController < ApplicationController
         )) AS avg_time_in_other
       FROM cycle_transactions
       WHERE
+        app_bin_id = #{ActiveRecord::Base.sanitize @app_bin.id} AND
         transaction_type = 'request_response' AND
         name <> 'RackTransaction' AND
         start > (current_timestamp - interval '1 day')
