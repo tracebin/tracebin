@@ -8,6 +8,18 @@ $(function() {
     });
   }
 
+  function formatWaterfallData(data) {
+    return data.map(function(row) {
+      return [
+        row[4],
+        new Date(row[1]),
+        new Date(row[1]),
+        new Date(row[2]),
+        new Date(row[2])
+      ];
+    });
+  }
+
   function handleMemData(timeData, res) {
     var formattedData = timeData.map(function(row) {
       return [new Date(row[0]), row[1], row[2]];
@@ -127,6 +139,46 @@ $(function() {
     });
   }
 
+  function handleEndpointsShow(timeData) {
+    var formattedData = formatWaterfallData(timeData);
+
+    var data = new google.visualization.DataTable();
+    var options;
+    var chart;
+
+    data.addColumn('string', 'Identifier');
+    data.addColumn('datetime', 'StartCopy');
+    data.addColumn('datetime', 'Start');
+    data.addColumn('datetime', 'Stop');
+    data.addColumn('datetime', 'StopCopy');
+
+    data.addRows(formattedData);
+
+    options = {
+      legend: 'none',
+      orientation: 'vertical',
+      bar: { groupWidth: '100%' },
+      candlestick: {
+        fallingColor: { strokeWidth: 0 },
+        risingColor: { strokeWidth: 0 }
+      }
+    };
+
+    chart = new google.visualization.CandlestickChart(document.getElementById('endpoints-show'));
+    chart.draw(data, options);
+  }
+
+  function getEndpointsShow() {
+    $.ajax({
+      method: 'GET',
+      url: window.location.pathname + '/endpoints/4',
+      cache: false,
+      dataType: 'json',
+
+      success: handleEndpointsShow
+    });
+  }
+
   function handleBackgroundJobsIndex(data) {
     $('#background-jobs-index').DataTable({
       data: data,
@@ -169,6 +221,7 @@ $(function() {
 
   getEndpointsIndex();
   getBackgroundJobsIndex();
+  google.charts.setOnLoadCallback(getEndpointsShow);
   google.charts.setOnLoadCallback(getTrafficData);
   google.charts.setOnLoadCallback(getMemData);
 });

@@ -5,7 +5,7 @@ class EndpointsController < ApplicationController
     render json: fetch_endpoints_stats.to_json
   end
 
-  def view
+  def show
     render json: fetch_endpoint_stats.to_json
   end
 
