@@ -171,7 +171,7 @@ $(function() {
   function getEndpointsShow() {
     $.ajax({
       method: 'GET',
-      url: window.location.pathname + '/endpoints/4',
+      url: window.location.pathname + '/endpoints/VideosController%23show',
       cache: false,
       dataType: 'json',
 

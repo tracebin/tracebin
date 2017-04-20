@@ -6,7 +6,7 @@ class EndpointsController < ApplicationController
   end
 
   def show
-    render json: fetch_endpoint_stats.to_json
+    render json: fetch_endpoint_stats(params[:id]).to_json
   end
 
   private
@@ -64,7 +64,7 @@ class EndpointsController < ApplicationController
     end
   end
 
-  def fetch_endpoint_stats
+  def fetch_endpoint_stats(endpoint_id)
     transaction_sql = <<~SQL
       SELECT
         'transaction' AS event_type,
@@ -74,8 +74,8 @@ class EndpointsController < ApplicationController
         'Rack Transaction' AS identifier
       FROM cycle_transactions
       WHERE
-        app_bin_id = 7 AND
-        name = 'VideosController#show'
+        app_bin_id = #{ActiveRecord::Base.sanitize @app_bin.id} AND
+        name = #{ActiveRecord::Base.sanitize endpoint_id}
       ORDER BY id DESC
       LIMIT 1;
     SQL
@@ -92,7 +92,9 @@ class EndpointsController < ApplicationController
         cycle_transaction_id = (
           SELECT id
           FROM cycle_transactions
-          WHERE app_bin_id = 7 AND name = 'VideosController#show'
+          WHERE
+            app_bin_id = #{ActiveRecord::Base.sanitize @app_bin.id} AND
+            name = #{ActiveRecord::Base.sanitize endpoint_id}
           ORDER BY id DESC
           LIMIT 1
         ) AND
@@ -112,7 +114,9 @@ class EndpointsController < ApplicationController
         cycle_transaction_id = (
           SELECT id
           FROM cycle_transactions
-          WHERE app_bin_id = 7 AND name = 'VideosController#show'
+          WHERE
+            app_bin_id = #{ActiveRecord::Base.sanitize @app_bin.id} AND
+            name = #{ActiveRecord::Base.sanitize endpoint_id}
           ORDER BY id DESC
           LIMIT 1
         ) AND
@@ -132,7 +136,9 @@ class EndpointsController < ApplicationController
         cycle_transaction_id = (
           SELECT id
           FROM cycle_transactions
-          WHERE app_bin_id = 7 AND name = 'VideosController#show'
+          WHERE
+            app_bin_id = #{ActiveRecord::Base.sanitize @app_bin.id} AND
+            name = #{ActiveRecord::Base.sanitize endpoint_id}
           ORDER BY id DESC
           LIMIT 1
         ) AND
