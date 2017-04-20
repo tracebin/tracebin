@@ -482,3 +482,98 @@ a.each do |t|
   end
 end
 ```
+
+### Querying Individual Endpoints
+
+For our waterfall diagram, we're going to take a random sample of an individual endpoint. For now, let's just take the most recent run of our `VideosController#show` action.
+
+```sql
+SELECT start, stop, events
+FROM cycle_transactions
+WHERE
+  app_bin_id = 7 AND
+  name = 'VideosController#show'
+ORDER BY id DESC
+LIMIT 1;
+```
+
+Now let's pull data from our `transaction_events` table, since it'll be easier to work with than JSON:
+
+```sql
+SELECT
+  data->>'sql' AS query,
+  min(start) AS start,
+  max(stop) AS stop,
+  count(*)
+FROM transaction_events
+WHERE
+  cycle_transaction_id = (
+    SELECT id
+    FROM cycle_transactions
+    WHERE app_bin_id = 7 AND name = 'VideosController#show'
+    ORDER BY id DESC
+    LIMIT 1
+  ) AND
+  event_type = 'sql'
+GROUP BY query;
+```
+
+This gives us all the sql queries for a given action. Since our JSON structure varies between each event type, our first approach will be to use a separate query for each event type.
+
+Here's the query for the transaction as a whole:
+
+```sql
+SELECT start, stop
+FROM cycle_transactions
+WHERE
+  app_bin_id = 7 AND
+  name = 'VideosController#show'
+ORDER BY id DESC
+LIMIT 1;
+```
+
+Endpoint:
+
+```sql
+SELECT
+  ((data->>'controller') || '#') || (data->>'action') AS endpoint,
+  min(start) AS start,
+  max(stop) AS stop,
+  count(*)
+FROM transaction_events
+WHERE
+  cycle_transaction_id = (
+    SELECT id
+    FROM cycle_transactions
+    WHERE app_bin_id = 7 AND name = 'VideosController#show'
+    ORDER BY id DESC
+    LIMIT 1
+  ) AND
+  event_type = 'controller_action'
+GROUP BY endpoint;
+```
+
+We want to keep it general, so we'll keep the groupings for this.
+
+Views:
+
+```sql
+SELECT
+  data->>'identifier' AS template,
+  min(start) AS start,
+  max(stop) AS stop,
+  count(*)
+FROM transaction_events
+WHERE
+  cycle_transaction_id = (
+    SELECT id
+    FROM cycle_transactions
+    WHERE app_bin_id = 7 AND name = 'VideosController#show'
+    ORDER BY id DESC
+    LIMIT 1
+  ) AND
+  event_type = 'view'
+GROUP BY template;
+```
+
+Now it's a matter of splicing them all together. For the first iteration we'll do that on the application layer.

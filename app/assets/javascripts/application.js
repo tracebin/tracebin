@@ -13,9 +13,5 @@
 //= require jquery
 //= require jquery_ujs
 //= require datatables.net
-//= require moment
-//= require chart.js.js
-//= require d3
-//= require metrics-graphics
 //= require turbolinks
 //= require_tree .

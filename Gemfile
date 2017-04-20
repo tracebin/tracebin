@@ -20,21 +20,18 @@ gem 'turbolinks', '~> 5'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-bootstrap'
-  gem 'rails-assets-fontawesome'
   gem 'rails-assets-datatables.net'
   gem 'rails-assets-datatables.net-dt'
-  gem 'rails-assets-moment'
-  gem 'rails-assets-chart.js'
-  gem 'rails-assets-d3'
-  gem 'rails-assets-metrics-graphics'
 end
 
 gem 'jbuilder', '~> 2.5'
-# gem 'redis', '~> 3.0'
+gem 'redis', '~> 3.0'
+gem 'figaro'
 # gem 'bcrypt', '~> 3.1.7'
 
-# gem 'capistrano-rails', group: :development
+# gem 'vizsla', path: ENV['VIZSLA_DEV_PATH']
 
+# gem 'capistrano-rails', group: :development
 
 group :development, :test do
   gem 'pry'
