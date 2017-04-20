@@ -148,6 +148,8 @@ class EndpointsController < ApplicationController
     (transaction_tuples.to_a.map(&:values) +
     endpoint_tuples.to_a.map(&:values) +
     sql_tuples.to_a.map(&:values) +
-    view_tuples.to_a.map(&:values)).sort_by { |tuple| tuple[1].to_datetime.to_f }
+    view_tuples.to_a.map(&:values)).sort_by do |tuple|
+      tuple[1].to_datetime.to_f
+    end
   end
 end
