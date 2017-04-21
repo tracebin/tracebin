@@ -8,21 +8,87 @@ $(function() {
     });
   }
 
+  function getWaterfallStyle(row) {
+    var waterfallStyles = {
+      'transaction': {
+        'single': 'color: red',
+        'multiple': 'color: red'
+      },
+
+      'endpoint': {
+        'single': 'color: red',
+        'multiple': 'color: red'
+      },
+
+      'sql': {
+        'single': 'color: teal',
+        'multiple': 'color: blue'
+      },
+
+      'view': {
+        'single': 'yellow',
+        'multiple': 'yellow'
+      },
+    };
+
+    var styleObj = waterfallStyles[row[0]];
+
+    if (row[3] <= 1) {
+      return styleObj['single'];
+    } else {
+      return styleObj['multiple'];
+    }
+  }
+
+  function prettifySQL(query) {
+    var sqlRegex = /(select |insert |update ).*(from |into |table )[\"\']?([^\"\'\s]*)/i
+    var matches = query.match(sqlRegex);
+    return matches[1] + matches[2] + matches[3];
+  }
+
+  function prettifyViewTemplate(templatePath) {
+    var viewRegex = /\/views\/(.*)/;
+    var matchedPath = templatePath.match(viewRegex);
+
+    if (matchedPath) {
+      return matchedPath[1];
+    } else {
+      return templatePath;
+    }
+  }
+
+  function waterfallTooltipIdentifier(type, identifier) {
+    if (type === 'sql') {
+      return prettifySQL(identifier);
+    } else if (type === 'view') {
+      return prettifyViewTemplate(identifier);
+    } else {
+      return identifier;
+    }
+  }
+
+  function getWaterfallTooltip(row) {
+    var nPlusOne = row[3] > 1 ? ' <N+1>' : ''
+    return waterfallTooltipIdentifier(row[0], row[4]) + nPlusOne;
+  }
+
   function formatWaterfallData(data) {
     return data.map(function(row) {
       return [
         row[4],
-        new Date(row[1]),
-        new Date(row[1]),
-        new Date(row[2]),
-        new Date(row[2])
+        row[1],
+        row[1],
+        row[2],
+        row[2],
+        getWaterfallStyle(row),
+        getWaterfallTooltip(row),
       ];
     });
   }
 
   function handleMemData(timeData, res) {
     var formattedData = timeData.map(function(row) {
-      return [new Date(row[0]), row[1], row[2]];
+      return [new Date(row[0]), row[2], row[1]];
     });
 
     var data = new google.visualization.DataTable();
@@ -30,14 +96,32 @@ $(function() {
     var chart;
 
     data.addColumn('datetime', 'Interval');
-    data.addColumn('number', 'Free');
     data.addColumn('number', 'Used');
+    data.addColumn('number', 'Free');
 
     data.addRows(formattedData);
 
     options = {
       title: 'Memory Usage',
-      vAxis: { title: 'MB' },
+      titleTextStyle: chartTitleTextStyle,
+
+      height: 300,
+      fontName: 'Abel',
+
+      legend: {
+        position: 'top'
+      },
+
+      vAxis: {
+        title: 'MB',
+        titleTextStyle: chartVAxisTitleTextStyle,
+
+        textStyle: chartVAxisTextStyle,
+      },
+
+      hAxis: {
+        textStyle: chartHAxisTextStyle,
+      },
       isStacked: true
     }
 
@@ -74,6 +158,10 @@ $(function() {
 
     options = {
       title: 'Traffic',
+      titleTextStyle: chartTitleTextStyle,
+
+      height: 300,
+      fontName: 'Abel',
 
       series: {
         0: { targetAxisIndex: 0 },
@@ -85,10 +173,27 @@ $(function() {
 
       seriesType: 'steppedArea',
 
-      vAxis: {
-        0: { title: 'Hits' },
-        1: { title: 'Average response time (ms)', }
+      vAxes: {
+        0: {
+          title: 'Hits',
+          titleTextStyle: chartVAxisTitleTextStyle,
+
+          textStyle: chartVAxisTextStyle,
+        },
+        1: {
+          title: 'Average response time (ms)',
+          titleTextStyle: chartVAxisTitleTextStyle,
+
+          textStyle: chartVAxisTextStyle,
+
+          minValue: 0,
+        }
+      },
+
+      hAxis: {
+        textStyle: chartHAxisTextStyle,
       }
+
     };
 
     chart = new google.visualization.ComboChart(document.getElementById('requests'));
@@ -147,20 +252,41 @@ $(function() {
     var chart;
 
     data.addColumn('string', 'Identifier');
-    data.addColumn('datetime', 'StartCopy');
-    data.addColumn('datetime', 'Start');
-    data.addColumn('datetime', 'Stop');
-    data.addColumn('datetime', 'StopCopy');
+    data.addColumn('number', 'Start');
+    data.addColumn('number', 'Start');
+    data.addColumn('number', 'Stop');
+    data.addColumn('number', 'Stop');
+    data.addColumn({ type: 'string', role: 'style' });
+    data.addColumn({ type: 'string', role: 'tooltip' });
 
     data.addRows(formattedData);
 
     options = {
       legend: 'none',
       orientation: 'vertical',
-      bar: { groupWidth: '100%' },
+      height: 400,
+      bar: { groupWidth: '80%' },
       candlestick: {
         fallingColor: { strokeWidth: 0 },
         risingColor: { strokeWidth: 0 }
+      },
+
+      hAxis: {
+        minValue: formattedData[0][1],
+        maxValue: formattedData[0][4],
+
+        viewWindowMode: 'maximized',
+
+        // gridlines: {
+        //   units: 'ms',
+        // },
+
+        textStyle: chartHAxisTextStyle,
+      },
+
+      vAxis: {
+        textPosition: 'none',
+        fontSize: 0
       }
     };
 
@@ -210,6 +336,27 @@ $(function() {
       success: handleBackgroundJobsIndex
     });
   }
+
+  var chartTitleTextStyle = {
+    color: '#888',
+    fontName: 'Oxygen',
+    fontSize: 22,
+    bold: false,
+  };
+
+  var chartVAxisTitleTextStyle = {
+    color: '#888',
+    fontName: 'Abel',
+    fontSize: 16,
+    bold: false,
+  };
+
+  var chartVAxisTextStyle = {
+    color: '#666',
+    fontName: 'Abel',
+  };
+
+  var chartHAxisTextStyle = chartVAxisTextStyle;
 
   $.ajaxSetup({
     headers: {

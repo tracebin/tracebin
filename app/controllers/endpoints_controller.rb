@@ -105,9 +105,9 @@ class EndpointsController < ApplicationController
     sql_sql = <<~SQL
       SELECT
         'sql' AS event_type,
-        min(start) AS start,
-        max(stop) AS stop,
-        count(*),
+        start,
+        stop,
+        1 AS count,
         data->>'sql' AS identifier
       FROM transaction_events
       WHERE
@@ -120,8 +120,7 @@ class EndpointsController < ApplicationController
           ORDER BY id DESC
           LIMIT 1
         ) AND
-        event_type = 'sql'
-      GROUP BY identifier;
+        event_type = 'sql';
     SQL
 
     view_sql = <<~SQL
@@ -151,11 +150,28 @@ class EndpointsController < ApplicationController
     sql_tuples = ActiveRecord::Base.connection.execute sql_sql
     view_tuples = ActiveRecord::Base.connection.execute view_sql
 
-    (transaction_tuples.to_a.map(&:values) +
-    endpoint_tuples.to_a.map(&:values) +
-    sql_tuples.to_a.map(&:values) +
-    view_tuples.to_a.map(&:values)).sort_by do |tuple|
-      tuple[1].to_datetime.to_f
+    all_events = (transaction_tuples.to_a.map(&:values) +
+      endpoint_tuples.to_a.map(&:values) +
+      sql_tuples.to_a.map(&:values) +
+      view_tuples.to_a.map(&:values)).sort_by do |tuple|
+        tuple[1].to_datetime.to_f
+    end
+
+    first_start = all_events[0][1].to_datetime.to_f
+
+    all_events.each_with_object([]) do |event, a|
+      if a.last && a.last[4] == event[4]
+        a.last[2] = (event[2].to_datetime.to_f - first_start) * 1000
+        a.last[3] += event[3]
+      else
+        a << [
+            event[0],
+            (event[1].to_datetime.to_f - first_start) * 1000,
+            (event[2].to_datetime.to_f - first_start) * 1000,
+            event[3].to_i,
+            event[4]
+          ]
+      end
     end
   end
 end
