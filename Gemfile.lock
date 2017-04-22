@@ -114,6 +114,9 @@ GEM
       rails-assets-jquery (>= 1.9.1, < 4)
     rails-assets-datatables.net (3.2.2)
       rails-assets-jquery (>= 1.7)
+    rails-assets-datatables.net-bs (3.2.2)
+      rails-assets-datatables.net (>= 1.10.9)
+      rails-assets-jquery (>= 1.7)
     rails-assets-datatables.net-dt (3.2.2)
       rails-assets-datatables.net (>= 1.10.9)
       rails-assets-jquery (>= 1.7)
@@ -193,8 +196,9 @@ DEPENDENCIES
   pry
   puma (~> 3.0)
   rails (~> 5.0.1)
-  rails-assets-bootstrap!
+  rails-assets-bootstrap (~> 3.3.7)!
   rails-assets-datatables.net!
+  rails-assets-datatables.net-bs!
   rails-assets-datatables.net-dt!
   redis (~> 3.0)
   sass-rails (~> 5.0)

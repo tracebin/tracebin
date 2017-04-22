@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css?family=Abel|Oxygen:400,700');
+
+body {
+  font-family: 'Abel', sans-serif;
+  font-size: 16px;
+  color: #666;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Oxygen', sans-serif;
+  font-weight: 400;
+  color: #888;
+}
+
+.dataTable {
+  width: 100%;
+
+  td,
+  th {
+    position: relative;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 2px 5px;
+  }
+
+  th {
+    border-bottom: 1px solid #ccc;
+    padding: 4px 7x;
+    font-size: 1.1em;
+    font-weight: bold;
+
+    &:after {
+      top: 6px;
+      font-size: .75em;
+    }
+  }
+
+  tr {
+    &.even {
+      background: #f3f3f3;
+    }
+  }
+}
