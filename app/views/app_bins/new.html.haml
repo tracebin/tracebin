@@ -1,12 +1,22 @@
-.row.hero
-  .row
-    = image_tag('tracebin_logo_hero.png', alt: 'Tracebin');
-  .row
-    .tagline
-      Easily monitor your web app's performance
+.row
+  %header.hero
+    .row
+      = image_tag('tracebin_logo_hero.png', alt: 'Tracebin');
+    .row
+      .tagline
+        Easily monitor your web app's performance
 
 .row
+  %main
+    %section.center
+      .row
+        %p.description
+          Generate a token, install our agent, we'll aggregate performance metrics, displaying 24 hours' worth of data right on this page.
 
-
-= form_for @app_bin do |f|
-  = f.submit 'Create a new bin'
+    %section.center
+      .row
+        = form_for @app_bin do |f|
+          = f.submit 'Create a new bin'
+      .row
+        %p.our-story
+          = link_to 'Our Story', '#' # TODO

@@ -5,9 +5,9 @@
     = csrf_meta_tags
     %script{ type: 'text/javascript', src: 'https://www.gstatic.com/charts/loader.js' }
     = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
-    = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+    = javascript_include_tag 'front', 'data-turbolinks-track': 'reload'
 
   %body
     .container
-      %main.front
+      .front
         = yield

@@ -19,6 +19,7 @@ h6 {
 
 .front {
   box-sizing: border-box;
+  margin-top: 225px;
   padding: 50px 0;
 
   .hero {
@@ -37,10 +38,29 @@ h6 {
     font-size: 1.4em;
   }
 
-  form {
-    margin: 25px 0 0 0;
+  main {
+    width: 60%;
+    margin: 40px auto;
+  }
 
+  section {
+    & + section {
+      margin: 30px 0 0 0;
+    }
+  }
+
+  p {
+    font-size: 1.2em;
+  }
+
+  .center {
     text-align: center;
+  }
+
+  .row {
+    & + .row {
+      margin-top: 10px;
+    }
   }
 
   input[type='submit'] {
@@ -52,11 +72,11 @@ h6 {
     font-family: 'Oxygen', sans-serif;
     font-weight: 400;
     font-size: 1.5em;
-    color: #555;
-    background: #ddd;
+    color: #dfe1e3;
+    background: #597085;
 
     &:hover {
-      background: #eee;
+      background: #9bb2c6;
     }
   }
 }
