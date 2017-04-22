@@ -6,6 +6,8 @@ class AppBinsController < ApplicationController
 
   def new
     @app_bin = AppBin.new
+
+    render layout: 'front'
   end
 
   def create
