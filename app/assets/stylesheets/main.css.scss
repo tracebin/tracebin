@@ -40,9 +40,19 @@ h6 {
     }
   }
 
-  tr {
-    &.even {
-      background: #f3f3f3;
+  tbody {
+    tr {
+      cursor: pointer;
+
+      &.even {
+        background: #f3f3f3;
+      }
+
+      td {
+        &:first-child {
+          font-weight: bold;
+        }
+      }
     }
   }
 }

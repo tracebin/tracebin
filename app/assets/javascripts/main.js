@@ -1,4 +1,17 @@
 $(function() {
+  function unbindEndpointsIndexEvents() {
+    $('#endpoints-index tbody').off('click');
+  }
+
+  function bindEndpointsIndexEvents(table) {
+    $('#endpoints-index tbody').on('click', 'tr', function(e) {
+      var data = table.row(this).data();
+      var endpoint = encodeURIComponent(data[0]);
+
+      getEndpointsShow(endpoint);
+    });
+  }
+
   function parseDates(data) {
     return data.map(function(sample) {
       return {
@@ -223,7 +236,9 @@ $(function() {
   }
 
   function handleEndpointsIndex(data) {
-    $('#endpoints-index').DataTable({
+    unbindEndpointsIndexEvents();
+
+    var table = $('#endpoints-index').DataTable({
       data: data,
       columns: [
         { title: 'Endpoint' },
@@ -241,6 +256,8 @@ $(function() {
       searching: false,
       bInfo: false
     });
+
+    bindEndpointsIndexEvents(table);
   }
 
   function getEndpointsIndex() {
@@ -288,10 +305,6 @@ $(function() {
 
         viewWindowMode: 'maximized',
 
-        // gridlines: {
-        //   units: 'ms',
-        // },
-
         textStyle: chartHAxisTextStyle,
       },
 
@@ -305,10 +318,10 @@ $(function() {
     chart.draw(data, options);
   }
 
-  function getEndpointsShow() {
+  function getEndpointsShow(endpoint) {
     $.ajax({
       method: 'GET',
-      url: window.location.pathname + '/endpoints/VideosController%23show',
+      url: window.location.pathname + '/endpoints/' + endpoint,
       cache: false,
       dataType: 'json',
 
@@ -379,7 +392,7 @@ $(function() {
 
   getEndpointsIndex();
   getBackgroundJobsIndex();
-  google.charts.setOnLoadCallback(getEndpointsShow);
+  // google.charts.setOnLoadCallback(getEndpointsShow);
   google.charts.setOnLoadCallback(getTrafficData);
   google.charts.setOnLoadCallback(getMemData);
 });
