@@ -1,2 +1,12 @@
+.row.hero
+  .row
+    = image_tag('tracebin_logo_hero.png', alt: 'Tracebin');
+  .row
+    .tagline
+      Easily monitor your web app's performance
+
+.row
+
+
 = form_for @app_bin do |f|
   = f.submit 'Create a new bin'

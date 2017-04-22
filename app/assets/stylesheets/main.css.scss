@@ -17,6 +17,50 @@ h6 {
   color: #888;
 }
 
+.front {
+  box-sizing: border-box;
+  padding: 50px 0;
+
+  .hero {
+    text-align: center;
+
+    .row {
+      & + .row {
+        margin-top: 20px;
+      }
+    }
+  }
+
+  .tagline {
+    font-family: 'Oxygen', sans-serif;
+    font-weight: 400;
+    font-size: 1.4em;
+  }
+
+  form {
+    margin: 25px 0 0 0;
+
+    text-align: center;
+  }
+
+  input[type='submit'] {
+    box-sizing: border-box;
+    border: 1px solid #888;
+    padding: 5px 20px;
+    border-radius: 3px;
+
+    font-family: 'Oxygen', sans-serif;
+    font-weight: 400;
+    font-size: 1.5em;
+    color: #555;
+    background: #ddd;
+
+    &:hover {
+      background: #eee;
+    }
+  }
+}
+
 .dataTable {
   width: 100%;
 
