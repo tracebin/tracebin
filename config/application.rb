@@ -23,5 +23,7 @@ module Tracebin
     # -- all .rb files in that directory are automatically loaded.
 
     config.active_job.queue_adapter = :sidekiq
+
+    config.autoload_paths << "#{Rails.root}/app/services"
   end
 end
