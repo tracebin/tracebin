@@ -58,5 +58,6 @@ class EndpointsIndexData
         tuple['avg_time_in_controller'].to_f.round(2),
         tuple['avg_time_in_other'].to_f.round(2)
       ]
+    end
   end
 end

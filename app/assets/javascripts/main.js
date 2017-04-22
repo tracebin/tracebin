@@ -11,23 +11,23 @@ $(function() {
   function getWaterfallStyle(row) {
     var waterfallStyles = {
       'transaction': {
-        'single': 'color: red',
-        'multiple': 'color: red'
+        'single': 'color: #E04650',
+        'multiple': 'color: #E04650'
       },
 
       'endpoint': {
-        'single': 'color: red',
-        'multiple': 'color: red'
+        'single': 'color: #E04650',
+        'multiple': 'color: #E04650'
       },
 
       'sql': {
-        'single': 'color: teal',
-        'multiple': 'color: blue'
+        'single': 'color: #1F8DA9',
+        'multiple': 'color: #40A4A5'
       },
 
       'view': {
-        'single': 'yellow',
-        'multiple': 'yellow'
+        'single': 'color: #EEE4CC',
+        'multiple': 'color: #EEE4CC'
       },
     };
 
@@ -108,6 +108,11 @@ $(function() {
       height: 300,
       fontName: 'Abel',
 
+      colors: [
+        '#1F6DA9',
+        '#E04650'
+      ],
+
       legend: {
         position: 'top'
       },
@@ -162,6 +167,11 @@ $(function() {
 
       height: 300,
       fontName: 'Abel',
+
+      colors: [
+        '#1F6DA9',
+        '#E04650'
+      ],
 
       series: {
         0: { targetAxisIndex: 0 },
@@ -265,6 +275,7 @@ $(function() {
       legend: 'none',
       orientation: 'vertical',
       height: 400,
+      width: '100%',
       bar: { groupWidth: '80%' },
       candlestick: {
         fallingColor: { strokeWidth: 0 },
