@@ -193,13 +193,14 @@ Tracebin.charts = {
 
         viewWindowMode: 'maximized',
 
+        format: '#ms',
         textStyle: Tracebin.chartStyles.hAxisText,
       },
 
       vAxis: {
         textPosition: 'none',
         fontSize: 1,
-      }
+      },
     };
 
     chart = new google.visualization.CandlestickChart(document.getElementById('endpoints-show'));

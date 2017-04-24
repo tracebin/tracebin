@@ -73,8 +73,14 @@ Tracebin.helpers = {
   },
 
   waterfallTooltip: function(row) {
-    var nPlusOne = row[3] > 1 ? ' <N+1>' : ''
-    return Tracebin.helpers.waterfallTooltipIdentifier(row[0], row[4]) + nPlusOne;
+    var nPlusOne = row[3] > 1;
+    var identifier = Tracebin.helpers.waterfallTooltipIdentifier(row[0], row[4]);
+    var duration = row[2] - row[1];
+    duration = Math.round(duration * 100.0) / 100.0;
+
+    return identifier +
+      " (" + (duration ? duration : '< 1') + "ms)" +
+      (nPlusOne ? ' - n+1' : '');
   },
 
   waterfallTooltipIdentifier: function(type, identifier) {
