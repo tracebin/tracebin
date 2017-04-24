@@ -36,7 +36,7 @@ append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "vendor/bund
 # set :keep_releases, 5
 
 set :pty, true
-set :use_sudo: false
+set :use_sudo false
 set :stage, :production
 set :deploy_via, :remote_cache
 set :puma_bind, "unix://#{shared_path}/tmp/sockets/#{fetch(:application)}-puma.sock"
