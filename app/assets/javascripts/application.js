@@ -16,4 +16,9 @@
 //= require datatables.net
 //= require datatables.net-bs
 //= require turbolinks
-//= require_tree .
+//= require tracebin
+//= require tracebin/styles
+//= require tracebin/chart_styles
+//= require tracebin/helpers
+//= require tracebin/events
+//= require tracebin/charts
