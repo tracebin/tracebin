@@ -21,7 +21,9 @@ class BackgroundJobsIndexData
           FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
         )) AS avg_time_in_sql,
         avg((
-          SELECT sum(duration)
+          -- View events happen within each other, so we just need to take the
+          -- highest value here.
+          SELECT max(duration)
           FROM jsonb_to_recordset(events->'view') AS x(duration NUMERIC)
         )) AS avg_time_in_view,
         avg((

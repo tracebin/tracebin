@@ -1,0 +1,8 @@
+%nav.navbar.navbar-default
+  .container
+    .navbar-header
+      %a.navbar-brand{ href: '#' }
+        = image_tag 'tracebin_logo_navbar.png', alt: 'Tracebin'
+    %ul.nav.navbar-nav.navbar-right
+      %li= link_to 'Our story', '#' # TODO
+      %li= link_to 'New bin', app_bins_path, class: '', method: 'create'
