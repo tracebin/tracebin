@@ -10,7 +10,11 @@ Tracebin.events = {
       var data = table.row(this).data();
       var endpoint = encodeURIComponent(data[0]);
 
-      Tracebin.charts.fetch('endpoints/' + endpoint, Tracebin.charts.endpointsShow);
+      Tracebin.fetch({
+        endpoint: 'endpoints/' + endpoint,
+        context: document.getElementById('endpoints-show'),
+        success: Tracebin.charts.endpointsShow,
+      });
     });
   },
 };

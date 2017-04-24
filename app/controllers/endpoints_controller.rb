@@ -6,7 +6,11 @@ class EndpointsController < ApplicationController
   end
 
   def show
-    render json: fetch_endpoint_stats(params[:id]).to_json
+    endpoint = params[:id]
+    render json: {
+      endpoint: endpoint,
+      data: fetch_endpoint_stats(endpoint)
+    }.to_json
   end
 
   private

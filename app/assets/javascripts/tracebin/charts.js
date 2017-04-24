@@ -32,6 +32,10 @@ Tracebin.charts = {
         position: 'top'
       },
 
+      chartArea: {
+        width: 700,
+      },
+
       vAxis: {
         title: 'MB',
         titleTextStyle: Tracebin.chartStyles.vAxisTitleText,
@@ -45,7 +49,7 @@ Tracebin.charts = {
       isStacked: true
     }
 
-    chart = new google.visualization.SteppedAreaChart(document.getElementById('mem-info'));
+    chart = new google.visualization.SteppedAreaChart(this);
 
     chart.draw(data, options);
   },
@@ -87,6 +91,10 @@ Tracebin.charts = {
 
       seriesType: 'steppedArea',
 
+      chartArea: {
+        width: 700,
+      },
+
       vAxes: {
         0: {
           title: 'Hits',
@@ -110,7 +118,7 @@ Tracebin.charts = {
 
     };
 
-    chart = new google.visualization.ComboChart(document.getElementById('requests'));
+    chart = new google.visualization.ComboChart(this);
 
     chart.draw(data, options);
   },
@@ -118,7 +126,7 @@ Tracebin.charts = {
   endpointsIndex: function(data) {
     Tracebin.events.unbindEndpointsIndex();
 
-    var table = $('#endpoints-index').DataTable({
+    var table = $(this).DataTable({
       data: data,
       columns: [
         { title: 'Endpoint' },
@@ -141,7 +149,7 @@ Tracebin.charts = {
   },
 
   endpointsShow: function(rawData) {
-    var formattedData = Tracebin.helpers.formatWaterfallData(rawData);
+    var formattedData = Tracebin.helpers.formatWaterfallData(rawData.data);
 
     var data = new google.visualization.DataTable();
     var options;
@@ -158,14 +166,25 @@ Tracebin.charts = {
     data.addRows(formattedData);
 
     options = {
+      title: rawData.endpoint,
+      titleTextStyle: Tracebin.chartStyles.titleText,
+      fontName: 'Abel',
+
       legend: 'none',
       orientation: 'vertical',
-      height: 400,
+      height: formattedData.length * 15 + 70,
       width: '100%',
+
       bar: { groupWidth: '80%' },
+
       candlestick: {
         fallingColor: { strokeWidth: 0 },
         risingColor: { strokeWidth: 0 }
+      },
+
+      chartArea: {
+        width: 700,
+        height: formattedData.length * 15,
       },
 
       hAxis: {
@@ -179,7 +198,7 @@ Tracebin.charts = {
 
       vAxis: {
         textPosition: 'none',
-        fontSize: 0
+        fontSize: 1,
       }
     };
 
@@ -188,7 +207,7 @@ Tracebin.charts = {
   },
 
   backgroundJobsIndex: function(data) {
-    $('#background-jobs-index').DataTable({
+    $(this).DataTable({
       data: data,
       columns: [
         { title: 'Job Name' },
@@ -205,17 +224,6 @@ Tracebin.charts = {
       paging: false,
       searching: false,
       bInfo: false
-    });
-  },
-
-  fetch: function(endpoint, success) {
-    $.ajax({
-      method: 'GET',
-      url: window.location.pathname + '/' + endpoint,
-      cache: false,
-      dataType: 'json',
-
-      success: success,
     });
   },
 };
