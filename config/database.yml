@@ -1,0 +1,20 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: localhost
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: tracebin_development
+
+test:
+  <<: *default
+  database: tracebin_test
+
+production:
+  <<: *default
+  database: tracebin_production
+  host: <%= ENV['TRACEBIN_DATABASE_HOST'] %>
+  username: <%= ENV['TRACEBIN_DATABASE_USERNAME'] %>
+  password: <%= ENV['TRACEBIN_DATABASE_PASSWORD'] %>

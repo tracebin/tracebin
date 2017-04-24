@@ -32,7 +32,6 @@ gem 'figaro'
 
 # gem 'vizsla', path: ENV['VIZSLA_DEV_PATH']
 
-# gem 'capistrano-rails', group: :development
 
 group :development, :test do
   gem 'pry'
@@ -40,6 +39,11 @@ group :development, :test do
 end
 
 group :development do
+  gem 'capistrano'
+  gem 'capistrano-rails'
+  gem 'capistrano-passenger'
+  gem 'capistrano-rbenv'
+  gem 'capistrano3-puma'
   gem 'web-console', '>= 3.3.0'
   gem 'listen', '~> 3.0.5'
   gem 'spring'
