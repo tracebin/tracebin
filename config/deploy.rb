@@ -5,7 +5,7 @@ set :application, 'tracebin'
 set :repo_url, "git@github.com:tracebin/tracebin.git"
 set :user, 'deploy'
 set :puma_threads, [4, 16]
-set :puma_workers: 2
+set :puma_workers, 2
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
