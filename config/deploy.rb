@@ -35,7 +35,7 @@ append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "vendor/bund
 # Default value for keep_releases is 5
 # set :keep_releases, 5
 
-set :pty, true
+set :pty, false
 set :use_sudo, false
 set :stage, :production
 set :deploy_via, :remote_cache
