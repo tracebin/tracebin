@@ -51,7 +51,7 @@ set :puma_worker_timeout, nil
 set :puma_init_active_record, true
 
 set :sidekiq_concurrency, 33
-set :sidekiq_default_hooks, false
+set :sidekiq_default_hooks, true
 set :sidekiq_env, fetch(:rack_env, fetch(:rails_env, fetch(:stage)))
 set :sidekiq_log, -> { "#{release_path}/log/sidekiq.log" }
 set :sidekiq_pid, -> { "#{shared_path}/tmp/pids/sidekiq.pid" }
