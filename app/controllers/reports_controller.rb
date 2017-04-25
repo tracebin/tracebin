@@ -6,7 +6,7 @@ class ReportsController < ActionController::API
 
     ReportsSaveJob.perform_later reports, @app_bin
 
-    render nothing: true, status: :ok
+    head :created
   end
 
   private
@@ -19,7 +19,7 @@ class ReportsController < ActionController::API
     @app_bin = AppBin.find_by app_key: params[:bin_id]
 
     if @app_bin.nil?
-      render nothing: true, status: :bad_request
+      head :not_found
     end
   end
 end
