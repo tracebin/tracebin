@@ -30,10 +30,8 @@ gem 'redis', '~> 3.0'
 gem 'figaro'
 gem 'redcarpet'
 gem 'pygmentize'
+gem 'tracebin'
 # gem 'bcrypt', '~> 3.1.7'
-
-# gem 'vizsla', path: ENV['VIZSLA_DEV_PATH']
-
 
 group :development, :test do
   gem 'pry'

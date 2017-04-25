@@ -1,4 +1,8 @@
-# Vizsla::Agent.configure do |config|
-#   config.ignored_paths = ['/reports']
-#   config.bin_id = 'vwDkMMG3Xi3Lcvz9G5hJuw'
-# end
+Tracebin::Agent.configure do |config|
+  config.bin_id = ENV['TRACEBIN_ID']
+  config.ignored_paths = ['/assets', '/reports']
+
+  if Rails.env.test? || Rails.env.development?
+    config.enabled = false
+  end
+end

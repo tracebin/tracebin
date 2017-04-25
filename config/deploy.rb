@@ -1,3 +1,20 @@
+# #
+# Some useful cap tasks:
+#
+# Deploy the application:
+#
+#   cap production deploy
+#
+# Restart things:
+#
+#   cap produciton deploy:restart
+#   cap production puma:restart
+#   cap production sidekiq:restart
+#
+# Set +application.yml+
+#
+#   cap production setup
+
 # config valid only for current version of Capistrano
 lock "3.8.1"
 
