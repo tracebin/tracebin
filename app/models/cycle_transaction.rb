@@ -38,6 +38,11 @@ class CycleTransaction < ApplicationRecord
   end
 
   def create_transaction_events
-    EventsSaveJob.perform_later self.id, self.events
+    return unless events.present?
+
+    events.values.flatten.each do |event|
+      params = event.merge({ cycle_transaction_id: self.id })
+      TransactionEvent.create params
+    end
   end
 end
