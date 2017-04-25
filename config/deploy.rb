@@ -5,7 +5,7 @@ set :application, 'tracebin'
 set :repo_url, "git@github.com:tracebin/tracebin.git"
 set :user, 'deploy'
 set :puma_threads, [4, 16]
-set :puma_workers, 2
+set :puma_workers, 1
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
@@ -50,7 +50,7 @@ set :puma_preload_app, true
 set :puma_worker_timeout, nil
 set :puma_init_active_record, true
 
-set :sidekiq_concurrency, 33
+set :sidekiq_concurrency, 10
 set :sidekiq_default_hooks, true
 set :sidekiq_env, fetch(:rack_env, fetch(:rails_env, fetch(:stage)))
 set :sidekiq_log, -> { "#{release_path}/log/sidekiq.log" }
