@@ -1,9 +1,14 @@
 require "capistrano/setup"
 require "capistrano/deploy"
+
 require 'capistrano/rails'
+require 'capistrano/bundler'
 require 'capistrano/passenger'
 require 'capistrano/rbenv'
 require 'capistrano/puma'
+require 'capistrano/sidekiq'
+
+install_plugin Capistrano::Puma
 
 set :rbenv_type, :user
 set :rbenv_ruby, '2.4.1'

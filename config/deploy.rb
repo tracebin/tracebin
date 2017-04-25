@@ -36,18 +36,37 @@ append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "vendor/bund
 # set :keep_releases, 5
 
 set :pty, true
-set :use_sudo false
+set :use_sudo, false
 set :stage, :production
 set :deploy_via, :remote_cache
+
 set :puma_bind, "unix://#{shared_path}/tmp/sockets/#{fetch(:application)}-puma.sock"
 set :puma_state,      "#{shared_path}/tmp/pids/puma.state"
 set :puma_pid,        "#{shared_path}/tmp/pids/puma.pid"
 set :puma_access_log, "#{release_path}/log/puma.error.log"
 set :puma_error_log,  "#{release_path}/log/puma.access.log"
-set :ssh_options,     { forward_agent: true, user: fetch(:user), keys: %w(~/.ssh/id_rsa.pub) }
+# set :ssh_options,     { forward_agent: true, user: fetch(:user), keys: %w(~/.ssh/id_rsa.pub) }
 set :puma_preload_app, true
 set :puma_worker_timeout, nil
 set :puma_init_active_record, true
+
+set :sidekiq_concurrency, 33
+set :sidekiq_default_hooks, false
+set :sidekiq_env, fetch(:rack_env, fetch(:rails_env, fetch(:stage)))
+set :sidekiq_log, -> { "#{release_path}/log/sidekiq.log" }
+set :sidekiq_pid, -> { "#{shared_path}/tmp/pids/sidekiq.pid" }
+set :sidekiq_processes, 2
+set :sidekiq_role, :app
+set :sidekiq_queue, [
+  'immediate,120',
+  'high,100',
+  'default,80',
+  'assets,30',
+  'import,25',
+  'low,20',
+  'scheduler,15',
+  'background,10'
+]
 
 namespace :puma do
   desc 'Create Directories for Puma Pids and Socket'

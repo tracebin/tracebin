@@ -39,11 +39,13 @@ group :development, :test do
 end
 
 group :development do
-  gem 'capistrano'
-  gem 'capistrano-rails'
-  gem 'capistrano-passenger'
-  gem 'capistrano-rbenv'
-  gem 'capistrano3-puma'
+  gem 'capistrano', require: false
+  gem 'capistrano-rails', require: false
+  gem 'capistrano-passenger', require: false
+  gem 'capistrano-rbenv', require: false
+  gem 'capistrano3-puma', require: false
+  gem 'capistrano-sidekiq', require: false
+
   gem 'web-console', '>= 3.3.0'
   gem 'listen', '~> 3.0.5'
   gem 'spring'
