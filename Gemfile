@@ -45,6 +45,7 @@ group :development do
   gem 'capistrano-rbenv', require: false
   gem 'capistrano3-puma', require: false
   gem 'capistrano-sidekiq', require: false
+  gem 'capistrano-figaro-yml', require: false
 
   gem 'web-console', '>= 3.3.0'
   gem 'listen', '~> 3.0.5'

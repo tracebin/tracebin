@@ -3,10 +3,11 @@ require "capistrano/deploy"
 
 require 'capistrano/rails'
 require 'capistrano/bundler'
-require 'capistrano/passenger'
+# require 'capistrano/passenger'
 require 'capistrano/rbenv'
 require 'capistrano/puma'
 require 'capistrano/sidekiq'
+require 'capistrano/figaro_yml'
 
 install_plugin Capistrano::Puma
 
