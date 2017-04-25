@@ -25,5 +25,6 @@ module Tracebin
     config.active_job.queue_adapter = :sidekiq
 
     config.autoload_paths << "#{Rails.root}/app/services"
+    config.autoload_paths << "#{Rails.root}/lib"
   end
 end

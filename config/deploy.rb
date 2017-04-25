@@ -55,7 +55,7 @@ set :sidekiq_default_hooks, true
 set :sidekiq_env, fetch(:rack_env, fetch(:rails_env, fetch(:stage)))
 set :sidekiq_log, -> { "#{release_path}/log/sidekiq.log" }
 set :sidekiq_pid, -> { "#{shared_path}/tmp/pids/sidekiq.pid" }
-set :sidekiq_processes, 2
+set :sidekiq_processes, 1
 set :sidekiq_role, :app
 set :sidekiq_queue, [
   'immediate,120',
@@ -104,6 +104,7 @@ namespace :deploy do
   task :restart do
     on roles(:app), in: :sequence, wait: 5 do
       invoke 'puma:restart'
+      invoke 'sidekiq:restart'
     end
   end
 

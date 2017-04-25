@@ -2,6 +2,7 @@ class AppBinsController < ApplicationController
   before_action :set_app_bin, only: [:show]
 
   def show
+    render 'fresh', layout: 'article' unless @app_bin.has_data?
   end
 
   def new

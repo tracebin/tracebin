@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Abel|Oxygen:400,700');
+@import url('https://fonts.googleapis.com/css?family=Abel|Oxygen:400,700|Roboto+Mono:400,400i,500,500i');
 
 body {
   font-family: 'Abel', sans-serif;
@@ -15,6 +15,16 @@ h6 {
   font-family: 'Oxygen', sans-serif;
   font-weight: 400;
   color: #888;
+}
+
+article {
+  width: 800px;
+  margin: 0 auto;
+  font-size: 18px;
+
+  p {
+    margin-bottom: 20px;
+  }
 }
 
 .navbar-brand {
