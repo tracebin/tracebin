@@ -3,6 +3,7 @@ class ReportsSaveJob < ApplicationJob
 
   def perform(reports, app_bin)
     reports.each do |payload|
+      next if payload.empty?
       report_table = payload[:type].tableize
       report = app_bin.send(report_table).build payload[:data]
 
