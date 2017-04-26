@@ -1,3 +1,6 @@
+////
+// This is the globally namespaced object under which all Tracebin-related data
+// should be stored. Any attributes you wish to be
 var Tracebin = {
   fetch: function(options) {
     $.ajax({
@@ -7,8 +10,19 @@ var Tracebin = {
       dataType: 'json',
       context: options.context,
 
+      beforeSend: Tracebin.showLoading,
+      complete: Tracebin.hideLoading,
       success: options.success,
     });
+  },
+
+  showLoading: function() {
+    $(this).text('');
+    $(this).closest('.load-overlay').addClass('loading');
+  },
+
+  hideLoading: function() {
+    $(this).closest('.load-overlay').removeClass('loading');
   },
 };
 
@@ -48,4 +62,5 @@ $(function() {
       success: Tracebin.charts.memoryMetricsShow,
     });
   });
+
 });

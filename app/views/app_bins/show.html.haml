@@ -6,7 +6,8 @@ Bin ID: #{@app_bin.to_param}
 
   .row
     .col-md-10.col-md-offset-1
-      #requests
+      .load-overlay
+        #requests
 
 %section.row.table-section
   .row
@@ -14,15 +15,17 @@ Bin ID: #{@app_bin.to_param}
 
   .row
     .col-md-10.col-md-offset-1
-      %table#endpoints-index
+      .load-overlay
+        %table#endpoints-index
 
   .row.subsection
     %h3 Endpoint Sample Profile
 
   .row
     .col-md-10.col-md-offset-1
-      #endpoints-show
-        Select an endpoint from above to view a timing profile!
+      .load-overlay
+        #endpoints-show
+          Select an endpoint from above to view a timing profile!
 
 %section.row.table-section
   .row
@@ -30,7 +33,8 @@ Bin ID: #{@app_bin.to_param}
 
   .row
     .col-md-10.col-md-offset-1
-      %table#background-jobs-index
+      .load-overlay
+        %table#background-jobs-index
 
 %section.row
   .row
@@ -38,4 +42,5 @@ Bin ID: #{@app_bin.to_param}
 
   .row
     .col-md-10.col-md-offset-1
-      #mem-info
+      .load-overlay
+        #mem-info
