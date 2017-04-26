@@ -1,6 +1,6 @@
 # tracebin
 
-(traceb.in)[https://traceb.in]
+[traceb.in](https://traceb.in)
 
 ## Data Interchange
 
@@ -8,7 +8,7 @@ Data received from agents must have a certain schema in order for Tracebin to be
 
 All data sent to the `/reports` endpoint must come in a form of an object with two keys: the bin ID (the random string generated when the bin was created) and an array of units.
 
-```json
+```javascript
 {
   "bin_id": "abcd...",
   "report": [ {}, {}, {} ] // Each object is a unit, explained just below.
@@ -17,7 +17,7 @@ All data sent to the `/reports` endpoint must come in a form of an object with t
 
 Each unit must take the following form:
 
-```json
+```javascript
 {
   "type": "unit_type", // e.g. `cycle_transaction` or `system_health_sample`
   "data": {
@@ -30,7 +30,7 @@ Each unit must take the following form:
 
 `cycle_transaction`s are any top-level transaction that take place during the runtime of a web application. Examples are request/response cycles and background job executions. We separate these two because background jobs happen asynchronously, and therefore their performance should be considered independently from the normal response time of an application's endpoint. Here's an example of what a `cycle_transaction` unit object looks like:
 
-```json
+```javascript
 {
   "type": "cycle_transaction",
   "data": {
@@ -57,7 +57,7 @@ Here are what the values for each of the keys in `data` should be:
 
 The `"events"` key in the `"data"` object of a `cycle_transaction` should point to an array of objects, per the above example. Below is an example of one such object:
 
-```json
+```javascript
 {
   "event_type": "route",
   "start": "2017-04-26 10:09:43 -0400",
@@ -71,7 +71,7 @@ The schema of the `"data"` depends on the type of event. Below are schemae the k
 
 ##### `sql`
 
-```json
+```javascript
 {
   "sql": "SELECT foo FROM bar",
   "name": "Load Bar", // Optional
@@ -83,7 +83,7 @@ The schema of the `"data"` depends on the type of event. Below are schemae the k
 
 Rails specific, although other MVC frameworks might conceivably take on this schema as well. This format will possibly merge with `route` to become a unified `endpoint` event type.
 
-```json
+```javascript
 {
   "controller": "FooController",
   "action": "bar",
@@ -101,7 +101,7 @@ Rails specific, although other MVC frameworks might conceivably take on this sch
 
 The non-rails-specific iteration of `controller_action`.
 
-```json
+```javascript
 {
   "endpoint": "GET /users",
   "format": "html",         // Optional from here on down
@@ -114,7 +114,7 @@ The non-rails-specific iteration of `controller_action`.
 
 ##### `view`
 
-```json
+```javascript
 {
   "identifier": "templates/foo.html.haml",
   "layout": "layouts/bar" // Optional - obviously, if the view event itself is
@@ -126,7 +126,7 @@ The non-rails-specific iteration of `controller_action`.
 
 Here is an example of a `system_health_sample` unit object:
 
-```json
+```javascript
 {
   "type": "system_health_sample",
   "data": {
@@ -154,7 +154,7 @@ Either `"web"` or `"worker"` -- these aren't currently used, but it will be usef
 
 This will be used to build a string to identify the machine sending the data.
 
-```json
+```javascript
 {
   "hostname": "some-hostname",
   "ip": "333.333.333.333",  // <- The machine's EXTERNAL ip address
@@ -164,7 +164,7 @@ This will be used to build a string to identify the machine sending the data.
 
 ##### `cpu`
 
-```json
+```javascript
 {
   "model_name": "Intel Foo i5",
   "processor_count": 1,   // <- Number of physical CPU units
@@ -177,7 +177,7 @@ This will be used to build a string to identify the machine sending the data.
 
 All values are in MB.
 
-```json
+```javascript
 {
   "total_memory": 16000,
   "wired_memory": 1000,    // <- Either 'wired' or 'cache', depending on the kernel

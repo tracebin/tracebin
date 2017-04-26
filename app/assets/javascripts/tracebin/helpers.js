@@ -1,5 +1,14 @@
 var Tracebin = Tracebin || {};
 
+////
+// Divide this code up with comments like this:
+//
+//   // ====--------------------------====
+//   // Header
+//   // ====--------------------------====
+//
+// We can break up/namespace this object later on.
+//
 Tracebin.helpers = {
   // ====--------------------------====
   // Text Formatters

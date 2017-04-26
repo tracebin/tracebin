@@ -1,6 +1,20 @@
 ////
 // This is the globally namespaced object under which all Tracebin-related data
-// should be stored. Any attributes you wish to be
+// should be stored. Any attributes you wish to add should be added in separate
+// files. For example, the +Tracebin.styles+ object should be in
+// +tracebin/styles.js+.
+//
+// For the sake of things not breaking completely, each one of those files
+// should have this straight at the top:
+//
+//   var Tracebin = Tracebin || {};
+//
+// Then we can define the object accordingly:
+//
+//   Tracebin.foo = { ... };
+//
+// Remember to add any new JS files to the +application.js+ manifest!
+//
 var Tracebin = {
   fetch: function(options) {
     $.ajax({
