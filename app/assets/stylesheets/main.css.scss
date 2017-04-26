@@ -1,7 +1,15 @@
 @import url('https://fonts.googleapis.com/css?family=Abel|Oxygen:400,700|Roboto+Mono:400,400i,500,500i');
 @import 'retina';
 
+html {
+  height: 100%;
+}
+
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+
   font-family: 'Abel', sans-serif;
   font-size: 16px;
   color: #666;
@@ -34,6 +42,14 @@ article {
   }
 }
 
+footer {
+  padding: 20px 0;
+}
+
+.content {
+  flex: 1;
+}
+
 .logo-hero {
   width: 600px;
   height: 127px;
@@ -63,7 +79,7 @@ article {
 
 .loading {
   width: 100%;
-  height: 300px;
+  height: 150px;
   background: #fff
               url(image_path('ajax-loader.gif'))
               center center no-repeat;

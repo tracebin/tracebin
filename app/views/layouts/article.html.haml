@@ -8,8 +8,10 @@
     = javascript_include_tag 'front', 'data-turbolinks-track': 'reload'
 
   %body
-    = render 'shared/navbar'
-    .container
-      %main
-        %article
-          = yield
+    .content
+      = render 'shared/navbar'
+      .container
+        %main
+          %article
+            = yield
+    = render 'shared/footer'
