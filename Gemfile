@@ -30,7 +30,7 @@ gem 'redis', '~> 3.0'
 gem 'figaro'
 gem 'redcarpet'
 gem 'pygmentize'
-gem 'tracebin'
+# gem 'tracebin'
 # gem 'bcrypt', '~> 3.1.7'
 
 group :development, :test do
