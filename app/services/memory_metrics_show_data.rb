@@ -13,7 +13,7 @@ class MemoryMetricsShowData
   def fetch_tuples
     sql = <<~SQL
       SELECT
-        to_timestamp(floor((extract('epoch' FROM sampled_at) / 600)) * 600)
+        to_timestamp(floor((extract('epoch' FROM sampled_at) / 600)) * 600) AT TIME ZONE 'UTC'
           AS interval,
         round(avg((metrics->'memory'->>'total_memory')::INTEGER))
           AS avg_total,
@@ -22,7 +22,7 @@ class MemoryMetricsShowData
       FROM system_health_samples
       WHERE
         app_bin_id = #{ActiveRecord::Base.sanitize @app_bin_id} AND
-        to_timestamp(floor((extract('epoch' FROM sampled_at) / 600)) * 600) > (current_timestamp - interval '1 day')
+        to_timestamp(floor((extract('epoch' FROM sampled_at) / 600)) * 600) AT TIME ZONE 'UTC' > (current_timestamp - interval '1 day') AT TIME ZONE 'UTC'
       GROUP BY interval
       ORDER BY interval ASC;
     SQL

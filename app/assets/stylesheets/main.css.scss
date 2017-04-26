@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Abel|Oxygen:400,700|Roboto+Mono:400,400i,500,500i');
+@import 'retina';
 
 body {
   font-family: 'Abel', sans-serif;
@@ -17,6 +18,12 @@ h6 {
   color: #888;
 }
 
+section {
+  & + section {
+    border-top: 1px solid #eee;
+  }
+}
+
 article {
   width: 800px;
   margin: 0 auto;
@@ -27,8 +34,31 @@ article {
   }
 }
 
+.logo-hero {
+  width: 600px;
+  height: 127px;
+  margin: 0 auto;
+
+  @include retina(image_path('tracebin_logo_hero.png'), 2, cover, center center no-repeat);
+}
+
 .navbar-brand {
-  margin-top: -4px;
+  .logo-navbar {
+    width: 133px;
+    height: 28px;
+    margin-top: -4px;
+
+    @include retina(image_path('tracebin_logo_navbar.png'), 2, cover, center center no-repeat);
+  }
+}
+
+.subsection {
+  width: 95%;
+  margin: 0 auto;
+}
+
+.table-section {
+  padding-bottom: 25px;
 }
 
 .front {
@@ -60,6 +90,7 @@ article {
   section {
     & + section {
       margin: 30px 0 0 0;
+      border: none;
     }
   }
 
@@ -122,8 +153,16 @@ article {
     tr {
       cursor: pointer;
 
+      transition: background .25s ease-in-out;
+      -moz-transition: background .25s ease-in-out;
+      -webkit-transition: background .25s ease-in-out;
+
       &.even {
         background: #f3f3f3;
+      }
+
+      &:hover {
+        background: #efefef;
       }
 
       td {

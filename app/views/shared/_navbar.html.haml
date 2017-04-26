@@ -2,7 +2,7 @@
   .container
     .navbar-header
       %a.navbar-brand{ href: root_path }
-        = image_tag 'tracebin_logo_navbar.png', alt: 'Tracebin'
+        .logo-navbar
     %ul.nav.navbar-nav.navbar-right
       %li= link_to 'Our story', '#' # TODO
       %li= link_to 'New bin', app_bins_path, method: 'create'

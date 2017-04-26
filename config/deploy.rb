@@ -3,6 +3,7 @@
 #
 # Deploy the application:
 #
+#   cap production puma:config
 #   cap production deploy
 #
 # Restart things:

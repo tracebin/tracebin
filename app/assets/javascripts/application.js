@@ -5,6 +5,7 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require retinajs
 //= require bootstrap
 //= require datatables.net
 //= require datatables.net-bs

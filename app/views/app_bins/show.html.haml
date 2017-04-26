@@ -1,20 +1,22 @@
-= @app_bin.to_param
+Bin ID: #{@app_bin.to_param}
 
 %section.row
-  %h2 Overview
+  .row
+    %h2 Overview
 
   .row
     .col-md-10.col-md-offset-1
       #requests
 
-%section.row
-  %h2 Endpoints
+%section.row.table-section
+  .row
+    %h2 Endpoints
 
   .row
     .col-md-10.col-md-offset-1
       %table#endpoints-index
 
-  .row
+  .row.subsection
     %h3 Endpoint Sample Profile
 
   .row
@@ -22,15 +24,17 @@
       #endpoints-show
         Select an endpoint from above to view a timing profile!
 
-%section.row
-  %h2 Background Jobs
+%section.row.table-section
+  .row
+    %h2 Background Jobs
 
   .row
     .col-md-10.col-md-offset-1
       %table#background-jobs-index
 
 %section.row
-  %h2 System Info
+  .row
+    %h2 System Info
 
   .row
     .col-md-10.col-md-offset-1

@@ -23,6 +23,7 @@ source 'https://rails-assets.org' do
   gem 'rails-assets-datatables.net'
   gem 'rails-assets-datatables.net-dt'
   gem 'rails-assets-datatables.net-bs'
+  gem 'rails-assets-retinajs'
 end
 
 gem 'jbuilder', '~> 2.5'
