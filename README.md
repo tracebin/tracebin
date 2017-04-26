@@ -1,5 +1,196 @@
 # tracebin
 
+(traceb.in)[https://traceb.in]
+
+## Data Interchange
+
+Data received from agents must have a certain schema in order for Tracebin to be able to parse it. For now, that data can fall into two categories: `cycle_transaction`, and `system_health_sample`. We'll call a single instance of either of these a "unit."
+
+All data sent to the `/reports` endpoint must come in a form of an object with two keys: the bin ID (the random string generated when the bin was created) and an array of units.
+
+```json
+{
+  "bin_id": "abcd...",
+  "report": [ {}, {}, {} ] // Each object is a unit, explained just below.
+}
+```
+
+Each unit must take the following form:
+
+```json
+{
+  "type": "unit_type", // e.g. `cycle_transaction` or `system_health_sample`
+  "data": {
+    // Unit data
+  }
+}
+```
+
+### `cycle_transaction` Schema
+
+`cycle_transaction`s are any top-level transaction that take place during the runtime of a web application. Examples are request/response cycles and background job executions. We separate these two because background jobs happen asynchronously, and therefore their performance should be considered independently from the normal response time of an application's endpoint. Here's an example of what a `cycle_transaction` unit object looks like:
+
+```json
+{
+  "type": "cycle_transaction",
+  "data": {
+    "transaction_type": "request_response",
+    "name": "VideosController#show",
+
+    "start": "2017-04-26 10:09:43 -0400",
+    "stop": "2017-04-26 10:09:43 -0400",
+    "duration": 7.5680000000000005,
+    "events": [ {}, {}, {} ]
+  }
+}
+```
+
+Here are what the values for each of the keys in `data` should be:
+
+**`transaction_type`**: Either `"request_response"` or `"background_job"`, depending on what it refers to.
+**`name`**: This should be the identifier of the process you are trying to measure. A web application's method/route combintaion (e.g. `GET /users`) would be a perfect example of this. For a Rails application, an even better string to put here would be the controller#action combination. Background jobs could be identified by their names.
+**`start` and `stop`**: These should refer to then the overall transaction started and ended. They should be strings in a format that can be parsed directly by PostgreSQL, with milliseconds included (meaning the above example isn't all that useful).
+**`duration`**: A floating point number representing the time it took for the transaction to complete in milliseconds.
+**`events`**: This is an array of objects representing each event that took place during the runtime of the transaction. We'll discuss these objects below.
+
+#### `cycle_transaction` Events Object Schemae
+
+The `"events"` key in the `"data"` object of a `cycle_transaction` should point to an array of objects, per the above example. Below is an example of one such object:
+
+```json
+{
+  "event_type": "route",
+  "start": "2017-04-26 10:09:43 -0400",
+  "stop": "2017-04-26 10:09:43 -0400",
+  "duration": 0.5820000000000001,
+  "data": {}
+}
+```
+
+The schema of the `"data"` depends on the type of event. Below are schemae the kinds of events we're currently measuring.
+
+##### `sql`
+
+```json
+{
+  "sql": "SELECT foo FROM bar",
+  "name": "Load Bar", // Optional
+  "statement_name": "a1" // Optional
+}
+```
+
+##### `controller_action`
+
+Rails specific, although other MVC frameworks might conceivably take on this schema as well. This format will possibly merge with `route` to become a unified `endpoint` event type.
+
+```json
+{
+  "controller": "FooController",
+  "action": "bar",
+  "format": "html",         // Optional from here on down
+  "method": "GET",
+  "status": 200,
+  "path": "/foo/bar",
+  "status": "ok",
+  "view_runtime": 20.5343,
+  "db_runtime": 5.2328
+}
+```
+
+##### `route`
+
+The non-rails-specific iteration of `controller_action`.
+
+```json
+{
+  "endpoint": "GET /users",
+  "format": "html",         // Optional from here on down
+  "method": "GET",
+  "status": 200,
+  "path": "/foo/bar",
+  "status": "ok"
+}
+```
+
+##### `view`
+
+```json
+{
+  "identifier": "templates/foo.html.haml",
+  "layout": "layouts/bar" // Optional - obviously, if the view event itself is
+                          // a layout, this won't be here.
+}
+```
+
+### `system_health_sample` Schema
+
+Here is an example of a `system_health_sample` unit object:
+
+```json
+{
+  "type": "system_health_sample",
+  "data": {
+    "sampled_at": "SOME TIME STRING",
+    "metrics": {
+      "process": "web",
+      "machine_id": {},
+      "cpu": {},
+      "memory": {},
+      "disks": {}
+    }
+  }
+}
+```
+
+**`sampled_at`**: Per above, this must be the datetime string that can be directly parsed by PostgreSQL.
+
+#### `metrics` Object Schema
+
+##### `process`
+
+Either `"web"` or `"worker"` -- these aren't currently used, but it will be useful eventually.
+
+##### `machine_id`
+
+This will be used to build a string to identify the machine sending the data.
+
+```json
+{
+  "hostname": "some-hostname",
+  "ip": "333.333.333.333",  // <- The machine's EXTERNAL ip address
+  "kernel": "linux"         // <- Whatever kernel the machine is running
+}
+```
+
+##### `cpu`
+
+```json
+{
+  "model_name": "Intel Foo i5",
+  "processor_count": 1,   // <- Number of physical CPU units
+  "core_count": 4,        // <- Total number of CPU cores
+  "logical_cpu_count": 8  // <- Total number of logical CPUs/threads
+}
+```
+
+##### `memory`
+
+All values are in MB.
+
+```json
+{
+  "total_memory": 16000,
+  "wired_memory": 1000,    // <- Either 'wired' or 'cache', depending on the kernel
+  "free_memory": 10000,
+  "used_memory": 6000,
+  "available_memory": 1200 // <- Optional
+}
+```
+
+##### `disk`
+
+This is no-man's land--we don't yet have a good schema for this.
+
 ## SQL Notes
 
 Here is a list of our query plans for aggregating data from the database.
