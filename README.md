@@ -2,6 +2,22 @@
 
 [traceb.in](https://traceb.in)
 
+## Deployment Notes
+
+Tracebin requires the `quantile` PostgreSQL extension. We use it because it's a fast way to generate medians and percentiles from a dataset. To install, we first need `pgxn`, which requires `easy_install`:
+
+```
+sudo apt-get install python-setuptools
+sudo easy_install pgxnclient
+```
+
+Then we use `pgxn` to install our extension, and add it to our database:
+
+```
+sudo pgxn install quantile
+sudo -u postgres -i pgxn load -d tracebin_production quantile
+```
+
 ## Data Interchange
 
 Data received from agents must have a certain schema in order for Tracebin to be able to parse it. For now, that data can fall into two categories: `cycle_transaction`, and `system_health_sample`. We'll call a single instance of either of these a "unit."

@@ -34,7 +34,7 @@ class CycleTransaction < ApplicationRecord
 
   def other_events_from(event_dump)
     event_dump.select do |event|
-      !['sql', 'view', 'controller_action'].include? event['event_type']
+      !['sql', 'view', 'controller_action', 'route'].include? event['event_type']
     end
   end
 

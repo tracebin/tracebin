@@ -11,6 +11,19 @@ var Tracebin = Tracebin || {};
 //
 Tracebin.helpers = {
   // ====--------------------------====
+  // AJAX Presentation Helpers
+  // ====--------------------------====
+
+  showLoading: function() {
+    $(this).text('');
+    $(this).closest('.load-overlay').addClass('loading');
+  },
+
+  hideLoading: function() {
+    $(this).closest('.load-overlay').removeClass('loading');
+  },
+
+  // ====--------------------------====
   // Text Formatters
   // ====--------------------------====
 

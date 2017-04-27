@@ -57,7 +57,8 @@ class TrafficMetricsShowData
       SELECT
         date_trunc('hour', ct.start) AS interval,
         count(*) AS hits,
-        avg(duration) AS avg_response_time
+        quantile(duration, 0.5) AS median_response_time,
+        quantile(duration, 0.95) AS ninety_fifth_percentile_response_time
       FROM cycle_transactions AS ct
       WHERE
         ct.app_bin_id = #{ActiveRecord::Base.sanitize @app_bin_id} AND
@@ -99,7 +100,12 @@ class TrafficMetricsShowData
     # All Endpoints
     #
     tuples.to_a.map do |tuple|
-      [tuple['interval'], tuple['hits'], tuple['avg_response_time'].to_f.round(3)]
+      [
+        tuple['interval'],
+        tuple['hits'],
+        tuple['median_response_time'].to_f.round(3),
+        tuple['ninety_fifth_percentile_response_time'].to_f.round(3)
+      ]
     end
   end
 end

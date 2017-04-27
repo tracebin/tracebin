@@ -14,7 +14,8 @@ class EndpointsIndexData
     sql = <<~SQL
       SELECT
         name AS endpoint,
-        avg(duration) AS avg_duration,
+        quantile(duration, 0.5) AS median_duration,
+        quantile(duration, 0.95) AS ninety_fith_percentile_duration,
         count(*) AS hits,
         avg((
           SELECT sum(duration)
@@ -31,7 +32,7 @@ class EndpointsIndexData
           FROM
             jsonb_to_recordset(events->'controller_action')
               AS x(duration NUMERIC)
-        )) AS avg_time_in_controller,
+        )) AS avg_time_in_app,
         avg((
           SELECT sum(duration)
           FROM jsonb_to_recordset(events->'other') AS x(duration NUMERIC)
@@ -51,14 +52,25 @@ class EndpointsIndexData
 
   def process_tuples(tuples)
     tuples.to_a.map do |tuple|
+      total_time = tuple['avg_time_in_app'].to_f.round(4)
+      sql_time = tuple['avg_time_in_sql'].to_f.round(4)
+      view_time = tuple['avg_time_in_view'].to_f.round(4)
+      other_time = tuple['avg_time_in_other'].to_f.round(4)
+
+      app_percent = (((total_time - sql_time - view_time - other_time) / total_time) * 100).round 2
+      sql_percent = (sql_time / total_time * 100).round 2
+      view_percent = (view_time / total_time * 100).round 2
+      other_percent = (other_time / total_time * 100).round 2
+
       [
         tuple['endpoint'],
-        tuple['avg_duration'].to_f.round(2),
         tuple['hits'],
-        tuple['avg_time_in_sql'].to_f.round(2),
-        tuple['avg_time_in_view'].to_f.round(2),
-        tuple['avg_time_in_controller'].to_f.round(2),
-        tuple['avg_time_in_other'].to_f.round(2)
+        tuple['median_duration'].to_f.round(2),
+        tuple['ninety_fith_percentile_duration'].to_f.round(2),
+        app_percent,
+        sql_percent,
+        view_percent,
+        other_percent
       ]
     end
   end
