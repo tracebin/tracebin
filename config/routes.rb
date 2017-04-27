@@ -9,5 +9,6 @@ Rails.application.routes.draw do
 
     resource :traffic_metrics, only: [:show]
     resource :memory_metrics, only: [:show]
+    resource :cpu_metrics, only: [:show]
   end
 end
