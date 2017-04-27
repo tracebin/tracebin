@@ -67,6 +67,8 @@ Tracebin.charts = {
       return [new Date(row[0]), row[2], row[1]];
     });
 
+    var totalMemory = formattedData[formattedData.length - 1][1] + formattedData[formattedData.length - 1][2]
+
     var data = new google.visualization.DataTable();
     var options;
     var chart;
@@ -97,11 +99,15 @@ Tracebin.charts = {
         width: 700,
       },
 
+
       vAxis: {
         title: 'MB',
         titleTextStyle: Tracebin.chartStyles.vAxisTitleText,
 
         textStyle: Tracebin.chartStyles.vAxisText,
+
+        viewWindowMode: 'maximized',
+        maxValue: totalMemory,
       },
 
       hAxis: {
