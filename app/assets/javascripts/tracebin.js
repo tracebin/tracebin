@@ -43,20 +43,20 @@ $(function() {
   Tracebin.fetch({
     endpoint: 'endpoints',
     context: document.getElementById('endpoints-index'),
-    success: Tracebin.charts.endpointsIndex,
+    success: Tracebin.charts.endpoints.index,
   });
 
   Tracebin.fetch({
     endpoint: 'background_jobs',
     context: document.getElementById('background-jobs-index'),
-    success: Tracebin.charts.backgroundJobsIndex,
+    success: Tracebin.charts.backgroundJobs.index,
   });
 
   google.charts.setOnLoadCallback(function() {
     Tracebin.fetch({
       endpoint: 'traffic_metrics',
       context: document.getElementById('requests'),
-      success: Tracebin.charts.trafficMetricsShow,
+      success: Tracebin.charts.trafficMetrics.show,
     });
   });
 
@@ -64,7 +64,7 @@ $(function() {
     Tracebin.fetch({
       endpoint: 'memory_metrics',
       context: document.getElementById('mem-info'),
-      success: Tracebin.charts.memoryMetricsShow,
+      success: Tracebin.charts.memoryMetrics.show,
     });
   });
 
@@ -72,7 +72,7 @@ $(function() {
     Tracebin.fetch({
       endpoint: 'cpu_metrics',
       context: document.getElementById('cpu-info'),
-      success: Tracebin.charts.cpuMetricsShow,
+      success: Tracebin.charts.cpuMetrics.show,
     });
   });
 });

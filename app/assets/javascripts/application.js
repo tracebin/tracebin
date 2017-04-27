@@ -17,3 +17,4 @@
 //= require tracebin/helpers
 //= require tracebin/events
 //= require tracebin/charts
+//= require_tree ./tracebin/charts

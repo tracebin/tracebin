@@ -13,7 +13,7 @@ Tracebin.events = {
       Tracebin.fetch({
         endpoint: 'endpoints/' + endpoint,
         context: document.getElementById('endpoints-show'),
-        success: Tracebin.charts.endpointsShow,
+        success: Tracebin.charts.endpoints.show,
       });
     });
   },
