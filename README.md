@@ -186,6 +186,7 @@ This will be used to build a string to identify the machine sending the data.
   "processor_count": 1,   // <- Number of physical CPU units
   "core_count": 4,        // <- Total number of CPU cores
   "logical_cpu_count": 8  // <- Total number of logical CPUs/threads
+  "usage": .56            // <- Percent usage (in ratio form, e.g., .56 == 56%)
 }
 ```
 

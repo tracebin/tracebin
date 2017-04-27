@@ -68,4 +68,11 @@ $(function() {
     });
   });
 
+  google.charts.setOnLoadCallback(function() {
+    Tracebin.fetch({
+      endpoint: 'cpu_metrics',
+      context: document.getElementById('cpu-info'),
+      success: Tracebin.charts.cpuMetricsShow,
+    });
+  });
 });

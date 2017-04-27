@@ -28,9 +28,14 @@ Tracebin.helpers = {
   // ====--------------------------====
 
   prettifySQLText: function(text) {
-    var sqlRegex = /(select |insert |update ).*(from |into |table )[\"\']?([^\"\'\s]*)/i
+    var sqlRegex = /(select |insert |update |delete ).*(from |into |table )[\"\']?([^\"\'\s]*)/i
     var matches = text.match(sqlRegex);
-    return matches[1] + matches[2] + matches[3];
+
+    if (matches) {
+      return matches[1] + matches[2] + matches[3];
+    } else {
+      return text;
+    }
   },
 
   prettifyViewText: function(text) {
