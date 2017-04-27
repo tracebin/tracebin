@@ -13,13 +13,13 @@ class CpuMetricsShowData
   def fetch_tuples
     sql = <<~SQL
       SELECT
-        date_trunc('hour', ct.start) AS interval,
-        round(avg((metrics->'cpu'->>'usage')::NUMERIC))
-          AS usage,
+        date_trunc('minute', sampled_at) AS interval,
+        avg((metrics->'cpu'->>'usage')::NUMERIC)
+          AS usage
       FROM system_health_samples
       WHERE
         app_bin_id = #{ActiveRecord::Base.sanitize @app_bin_id} AND
-        date_trunc('hour', ct.start) > (current_timestamp - interval '1 day')
+        date_trunc('minute', sampled_at) > (current_timestamp - interval '1 day')
       GROUP BY interval
       ORDER BY interval ASC;
     SQL
@@ -31,7 +31,7 @@ class CpuMetricsShowData
     tuples.map do |tuple|
       [
         tuple['interval'],
-        tuple['usage'].to_f.round(1)
+        tuple['usage'].to_f.round(3)
       ]
     end
   end
