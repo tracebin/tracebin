@@ -13,7 +13,7 @@ class EndpointsShowData
 
     first_start = tuples[0][1].to_datetime.to_f
 
-    tuples.each_with_object([]) do |event, a|
+    data = tuples.each_with_object([]) do |event, a|
       if a.last && a.last[4] == event[4]
         a.last[2] = (event[2].to_datetime.to_f - first_start) * 1000
         a.last[3] += event[3]
@@ -27,6 +27,12 @@ class EndpointsShowData
           ]
       end
     end
+
+    {
+      endpoint: endpoint_id,
+      sample_time: tuples[0][1].to_datetime,
+      data: data
+    }
   end
 
   private

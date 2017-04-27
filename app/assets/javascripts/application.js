@@ -9,6 +9,7 @@
 //= require bootstrap
 //= require datatables.net
 //= require datatables.net-bs
+//= require moment
 //= require turbolinks
 //= require tracebin
 //= require tracebin/styles

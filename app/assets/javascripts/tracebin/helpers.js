@@ -11,6 +11,24 @@ var Tracebin = Tracebin || {};
 //
 Tracebin.helpers = {
   // ====--------------------------====
+  // Chart Components
+  // ====--------------------------====
+
+  addSubtitle: function(chart, container, titleText, subtitle) {
+    google.visualization.events.addListener(chart, 'ready', function() {
+      Array.prototype.forEach.call(container.getElementsByTagName('text'), function(labelNode) {
+        if (labelNode.innerHTML === titleText) {
+          var subNode = labelNode.parentNode.appendChild(labelNode.cloneNode(true));
+          labelNode.setAttribute('y', 20);
+          subNode.innerHTML = subtitle;
+          subNode.setAttribute('y', parseFloat(labelNode.getAttribute('y')) + 20);
+          subNode.setAttribute('style', Tracebin.chartStyles.subtitleTextStyle);
+        }
+      });
+    });
+  },
+
+  // ====--------------------------====
   // AJAX Presentation Helpers
   // ====--------------------------====
 

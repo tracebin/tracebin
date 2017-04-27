@@ -276,8 +276,12 @@ Tracebin.charts = {
 
   endpointsShow: function(rawData) {
     var formattedData = Tracebin.helpers.formatWaterfallData(rawData.data);
+    var title = rawData.endpoint;
+    var sampleTime = moment(rawData.sample_time).format('DD MMMM YYYY, HH:mm:ss');
+    var subtitle = 'Sampled at: ' + sampleTime + ' UTC';
 
     var data = new google.visualization.DataTable();
+    var container = this;
     var options;
     var chart;
 
@@ -292,13 +296,14 @@ Tracebin.charts = {
     data.addRows(formattedData);
 
     options = {
-      title: rawData.endpoint,
+      title: title,
       titleTextStyle: Tracebin.chartStyles.titleText,
+
       fontName: 'Abel',
 
       legend: 'none',
       orientation: 'vertical',
-      height: formattedData.length * 15 + 70,
+      height: formattedData.length * 15 + 50 + 20,
       width: '100%',
 
       bar: { groupWidth: '80%' },
@@ -311,6 +316,7 @@ Tracebin.charts = {
       chartArea: {
         width: 700,
         height: formattedData.length * 15,
+        top: 50,
       },
 
       hAxis: {
@@ -329,7 +335,10 @@ Tracebin.charts = {
       },
     };
 
-    chart = new google.visualization.CandlestickChart(document.getElementById('endpoints-show'));
+    chart = new google.visualization.CandlestickChart(container);
+
+    Tracebin.helpers.addSubtitle(chart, container, title, subtitle);
+
     chart.draw(data, options);
   },
 

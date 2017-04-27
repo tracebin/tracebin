@@ -20,6 +20,7 @@ gem 'turbolinks', '~> 5'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-bootstrap', '~>3.3.7'
+  gem 'rails-assets-moment'
   gem 'rails-assets-datatables.net'
   gem 'rails-assets-datatables.net-dt'
   gem 'rails-assets-datatables.net-bs'

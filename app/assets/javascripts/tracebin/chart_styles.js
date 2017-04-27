@@ -23,5 +23,7 @@ Tracebin.chartStyles = {
   hAxisTextStyle: {
     color: Tracebin.styles.colors.body,
     fontName: Tracebin.styles.fonts.body,
-  }
+  },
+
+  subtitleTextStyle: 'font-family: "Abel"; font-size: 0.85em;',
 };

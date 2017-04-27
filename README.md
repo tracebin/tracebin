@@ -18,6 +18,8 @@ sudo pgxn install quantile
 sudo -u postgres -i pgxn load -d tracebin_production quantile
 ```
 
+For more information about the `quantile` extension, visit [pgxn.org/dist/quantile/](https://pgxn.org/dist/quantile/).
+
 ## Data Interchange
 
 Data received from agents must have a certain schema in order for Tracebin to be able to parse it. For now, that data can fall into two categories: `cycle_transaction`, and `system_health_sample`. We'll call a single instance of either of these a "unit."
