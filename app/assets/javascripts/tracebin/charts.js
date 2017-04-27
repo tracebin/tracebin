@@ -60,6 +60,7 @@ var Tracebin = Tracebin || {};
 //       textStyle: Tracebin.chartStyles.hAxisText,
 //     },
 //   }
+//
 Tracebin.charts = {
   memoryMetricsShow: function(rawData) {
     var formattedData = rawData.map(function(row) {
@@ -116,7 +117,7 @@ Tracebin.charts = {
 
   trafficMetricsShow: function(rawData) {
     var formattedData = rawData.map(function(row) {
-      return [new Date(row[0]), row[1], row[2]];
+      return [new Date(row[0]), row[1], row[2], row[3]];
     });
 
     var data = new google.visualization.DataTable();
@@ -125,7 +126,8 @@ Tracebin.charts = {
 
     data.addColumn('datetime', 'Interval');
     data.addColumn('number', 'Hits');
-    data.addColumn('number', 'Average response time');
+    data.addColumn('number', 'Median response');
+    data.addColumn('number', 'Slow response');
 
     data.addRows(formattedData);
 
@@ -138,6 +140,7 @@ Tracebin.charts = {
 
       colors: [
         Tracebin.styles.colors.blue,
+        Tracebin.styles.colors.green,
         Tracebin.styles.colors.red,
       ],
 
@@ -145,7 +148,11 @@ Tracebin.charts = {
         0: { targetAxisIndex: 0 },
         1: {
           targetAxisIndex: 1,
-          type: 'line'
+          type: 'line',
+        },
+        2: {
+          targetAxisIndex: 1,
+          type: 'line',
         }
       },
 
@@ -163,7 +170,7 @@ Tracebin.charts = {
           textStyle: Tracebin.chartStyles.vAxisText,
         },
         1: {
-          title: 'Average response time (ms)',
+          title: 'Response time (ms)',
           titleTextStyle: Tracebin.chartStyles.vAxisTitleText,
 
           textStyle: Tracebin.chartStyles.vAxisText,
@@ -190,15 +197,16 @@ Tracebin.charts = {
       data: data,
       columns: [
         { title: 'Endpoint' },
-        { title: 'Average Response Time' },
         { title: 'Hits' },
-        { title: 'Avg SQL Time' },
-        { title: 'Avg View Time' },
-        { title: 'Avg App Time' },
-        { title: 'Avg Other Time'}
+        { title: 'Median Response' },
+        { title: 'Slow Response' },
+        { title: '% App' },
+        { title: '% SQL' },
+        { title: '% View' },
+        { title: '% Other'}
       ],
 
-      order: [[2, 'desc']],
+      order: [[1, 'desc']],
 
       paging: false,
       searching: false,
@@ -272,15 +280,16 @@ Tracebin.charts = {
       data: data,
       columns: [
         { title: 'Job Name' },
-        { title: 'Average Job Time' },
         { title: 'Hits' },
-        { title: 'Avg SQL Time' },
-        { title: 'Avg View Time' },
-        { title: 'Avg App Time' },
-        { title: 'Avg Other Time'}
+        { title: 'Median Time' },
+        { title: 'Slow Time' },
+        { title: '% App' },
+        { title: '% SQL' },
+        { title: '% View' },
+        { title: '% Other'}
       ],
 
-      order: [[2, 'desc']],
+      order: [[1, 'desc']],
 
       paging: false,
       searching: false,

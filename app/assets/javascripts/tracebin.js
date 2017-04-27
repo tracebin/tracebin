@@ -24,19 +24,10 @@ var Tracebin = {
       dataType: 'json',
       context: options.context,
 
-      beforeSend: Tracebin.showLoading,
-      complete: Tracebin.hideLoading,
+      beforeSend: Tracebin.helpers.showLoading,
+      complete: Tracebin.helpers.hideLoading,
       success: options.success,
     });
-  },
-
-  showLoading: function() {
-    $(this).text('');
-    $(this).closest('.load-overlay').addClass('loading');
-  },
-
-  hideLoading: function() {
-    $(this).closest('.load-overlay').removeClass('loading');
   },
 };
 

@@ -30,7 +30,7 @@ Tracebin::Agent.configure do |config|
 end
 ```
 
-For more configuration options, visit [https://github.com/tracebin/tracebin-ruby](https://github.com/tracebin/tracebin-ruby).
+You may want to use an environment variable to store your bin id, and not check it in to version control. For more configuration options, visit [https://github.com/tracebin/tracebin-ruby](https://github.com/tracebin/tracebin-ruby).
 
 If you're running Sinatra, you'll need to manually add our middleware:
 
