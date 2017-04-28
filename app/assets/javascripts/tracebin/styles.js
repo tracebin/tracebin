@@ -16,6 +16,7 @@ Tracebin.styles = {
     lightBlue: '#57A1E0',
     yellow: '#F6E6AA',
     orange: '#FFD59F',
+    purple: '#A07CD6',
     black: '#384754',
   },
 };

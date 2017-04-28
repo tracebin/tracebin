@@ -107,6 +107,11 @@ Tracebin.helpers = {
         'single': 'color: ' + Tracebin.styles.colors.yellow,
         'multiple': 'color: ' + Tracebin.styles.colors.orange,
       },
+
+      'other': {
+        'single': 'color: ' + Tracebin.styles.colors.purple,
+        'multiple': 'color: ' + Tracebin.styles.colors.purple,
+      },
     };
 
     var styleObj = waterfallStyles[row[0]];

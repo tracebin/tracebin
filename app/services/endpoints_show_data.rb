@@ -118,11 +118,34 @@ class EndpointsShowData
       GROUP BY identifier;
     SQL
 
+    other_sql = <<~SQL
+      SELECT
+        'other' AS event_type,
+        min(start) AS start,
+        max(stop) AS stop,
+        count(*),
+        data->>'identifier' AS identifier
+      FROM transaction_events
+      WHERE
+        cycle_transaction_id = (
+          SELECT id
+          FROM cycle_transactions
+          WHERE
+            app_bin_id = #{ActiveRecord::Base.sanitize app_bin_id} AND
+            name = #{ActiveRecord::Base.sanitize endpoint_id}
+          ORDER BY id DESC
+          LIMIT 1
+        ) AND
+        event_type = 'other'
+      GROUP BY identifier;
+    SQL
+
     [
       ActiveRecord::Base.connection.execute(transaction_sql),
       ActiveRecord::Base.connection.execute(endpoint_sql),
       ActiveRecord::Base.connection.execute(sql_sql),
-      ActiveRecord::Base.connection.execute(view_sql)
+      ActiveRecord::Base.connection.execute(view_sql),
+      ActiveRecord::Base.connection.execute(other_sql)
     ]
   end
 end
