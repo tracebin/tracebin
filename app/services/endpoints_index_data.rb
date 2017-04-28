@@ -17,11 +17,11 @@ class EndpointsIndexData
         quantile(duration, 0.5) AS median_duration,
         quantile(duration, 0.95) AS ninety_fith_percentile_duration,
         count(*) AS hits,
-        avg((
+        avg(coalesce((
           SELECT sum(duration)
           FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
-        )) AS avg_time_in_sql,
-        avg((
+        ), 0)) AS avg_time_in_sql,
+        avg(coalesce((
           -- View events happen within each other, so we just need to take the
           -- highest value here.
           SELECT max(duration) - (
@@ -35,17 +35,17 @@ class EndpointsIndexData
           FROM
             jsonb_to_recordset(events->'view')
               AS x(duration NUMERIC, start TIMESTAMP, stop TIMESTAMP)
-        )) AS avg_time_in_view,
-        avg((
+        ), 0)) AS avg_time_in_view,
+        avg(coalesce((
           SELECT sum(duration)
           FROM
             jsonb_to_recordset(events->'controller_action')
               AS x(duration NUMERIC)
-        )) AS avg_time_in_app,
-        avg((
+        ), 0)) AS avg_time_in_app,
+        avg(coalesce((
           SELECT sum(duration)
           FROM jsonb_to_recordset(events->'other') AS x(duration NUMERIC)
-        )) AS avg_time_in_other
+        ), 0)) AS avg_time_in_other
       FROM cycle_transactions
       WHERE
         app_bin_id = #{ActiveRecord::Base.sanitize @app_bin_id} AND
