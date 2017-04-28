@@ -24,8 +24,17 @@ class EndpointsIndexData
         avg((
           -- View events happen within each other, so we just need to take the
           -- highest value here.
-          SELECT max(duration)
-          FROM jsonb_to_recordset(events->'view') AS x(duration NUMERIC)
+          SELECT max(duration) - (
+            SELECT sum(duration)
+            FROM
+              jsonb_to_recordset(events->'sql')
+                AS y(duration NUMERIC, start TIMESTAMP, stop TIMESTAMP)
+            WHERE
+              y.start >= min(x.start) AND y.stop <= max(x.stop)
+          )
+          FROM
+            jsonb_to_recordset(events->'view')
+              AS x(duration NUMERIC, start TIMESTAMP, stop TIMESTAMP)
         )) AS avg_time_in_view,
         avg((
           SELECT sum(duration)
