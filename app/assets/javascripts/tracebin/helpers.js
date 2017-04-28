@@ -100,17 +100,20 @@ Tracebin.helpers = {
       'sql': {
         'single': 'color: ' + Tracebin.styles.colors.blue,
         'multiple': 'color: ' + Tracebin.styles.colors.green,
+        'sqlTransaction': 'color: ' + Tracebin.styles.colors.lightBlue,
       },
 
       'view': {
         'single': 'color: ' + Tracebin.styles.colors.yellow,
-        'multiple': 'color: ' + Tracebin.styles.colors.yellow,
+        'multiple': 'color: ' + Tracebin.styles.colors.orange,
       },
     };
 
     var styleObj = waterfallStyles[row[0]];
 
-    if (row[3] <= 1) {
+    if (row[0] === 'sql' && Tracebin.helpers.isSqlTransaction(row[4])) {
+      return styleObj['sqlTransaction'];
+    } else if (row[3] <= 1) {
       return styleObj['single'];
     } else {
       return styleObj['multiple'];
@@ -136,5 +139,9 @@ Tracebin.helpers = {
     } else {
       return identifier;
     }
+  },
+
+  isSqlTransaction: function(query) {
+    return query.match(/^begin/i) || query.match(/^commit/i);
   },
 };
