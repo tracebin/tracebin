@@ -2,7 +2,7 @@
 
 We are [Tyler Guillen](http://tylerguillen.com) and [Konstantin Minevskiy](http://minevskiy.com), two software developers who met through [Launch School](https://launchschool.com) and decided to pair on a project together. We set out to make a fast and easy way for a developer to keep a finger on the pulse of their web application, with minimal configuration and setup. Four weeks and many cups of coffee later, Tracebin was born. This is the story of the development process of Tracebin.
 
-<<<< FULL PAGE SCREENSHOT OF AN UP-AND-RUNNING APP HERE >>>>
+[![Tracebin screenshot](/images/tracebin_screenshot_1.png)](/images/tracebin_screenshot_1.png)
 
 Tracebin takes the concept of "Bin" projects like [JS Bin](https://jsbin.com) and [RequestBin](https://requestb.in) and applies it to application performance monitoring. The developer creates a "bin," installs our agent, and Tracebin collects various performance metrics to help detect slow endpoints, background jobs, and other common performance issues. We wrote a Ruby agent to begin with, but plan to expand our platform to Python and JavaScript in the future. Therefore, while most of this article will contain code in Ruby, it can mostly be generalized to any language that runs a web application.
 
@@ -11,6 +11,7 @@ Tracebin is composed of two components: the agent and the server. The agent is a
 
 1. **Footprint**: We wanted to be conscious of our application’s footprint, both in terms of memory usage, as well as runtime dependencies. With that in mind, we wanted to only load components that we need (as lazily as possible), and code as close to the metal as we can.
 2. **Performance Impact**: Obviously, we don’t want a tool that measures application performance to have its finger on the scale. Therefore, as a rule, we wanted our agent to handle most of its administrative tasks asynchronously. This includes loading and unloading data from storage, measuring system health metrics, as well as communicating with the server.
+3. **Transparency**: We wanted to create a set-it-and-forget-it style agent that doesn't require any extra engineering overhead to get it to work well.
 
 We studied multiple existing projects that address these considerations, adopting the solutions that worked best for our project's nature and scope.
 
@@ -115,7 +116,7 @@ First, let’s get some terminology out of the way. We refer to a full request/r
 #### Collecting Events
 Most libraries that we’ve seen build its measurements of a transaction in a nested, graph-like structure. When an event starts, any other event that occurs during its runtime gets added as one of its children. A pointer keeps track of the currently running event. When the event ends, that pointer is moved to the event’s parent event. When the “root” event ends (i.e. the transaction, in our terms), we process the data.
 
-<<<< DEMONSTRATION OF NESTED EVENT STRUCTURE HERE >>>>
+[![Tracebin screenshot](/images/tracebin_event_diagram_nested.png)](/images/tracebin_event_diagram_nested.png)
 
 The main advantage of this model is we simply need to iterate through its structure depth-first in order to follow the execution flow of the transaction, since the data is already sorted by the time at which the event occurred. Furthermore, each transaction is bundled in a neat package for easy data transmission. It also allows us to more easily detect n+1 queries and other repeated operations.
 
@@ -123,7 +124,7 @@ The major drawback that we’ve identified with the nested-event model is that i
 
 Rather than a fully-nested data structure, we instead store our events in a flatter, two-level structure. The full transaction acts as a “root node,” and all events that happen during the transaction are stored in an array. Events are pushed onto the array as they finish, thus they end up in a quasi-sorted order.
 
-<<<< DEMONSTRATION OF FLAT EVENT STRUCTURE HERE >>>>
+[![Tracebin screenshot](/images/tracebin_event_diagram_flat.png)](/images/tracebin_event_diagram_flat.png)
 
 This structure provides a slight performance advantage when the data is deserialized, but will require slightly more computation when we go to trace the execution flow of the transaction. The main advantage with this model, however, is its ease of implementation. Just shovel each new event onto an array!
 
