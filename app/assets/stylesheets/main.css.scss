@@ -32,16 +32,6 @@ section {
   }
 }
 
-article {
-  width: 800px;
-  margin: 0 auto;
-  font-size: 18px;
-
-  p {
-    margin-bottom: 20px;
-  }
-}
-
 footer {
   padding: 20px 0;
 }
@@ -83,6 +73,42 @@ footer {
   background: #fff
               url(image_path('ajax-loader.gif'))
               center center no-repeat;
+}
+
+article {
+  width: 800px;
+  margin: 0 auto;
+  font-size: 18px;
+
+  p,
+  ol,
+  ul {
+    margin-bottom: 20px;
+  }
+
+  ol {
+    list-style-type: decimal;
+  }
+
+  ul {
+    list-style-type: disc;
+  }
+
+  li {
+    & + li {
+      margin-top: 3px;
+    }
+  }
+
+  img {
+    display: block;
+    width: 85%;
+    margin: 0 auto;
+  }
+
+  strong {
+    font-style: italic;
+  }
 }
 
 .front {
