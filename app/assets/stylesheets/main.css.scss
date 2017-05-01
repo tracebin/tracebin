@@ -37,8 +37,28 @@ article {
   margin: 0 auto;
   font-size: 18px;
 
-  p {
+  p,
+  ol,
+  ul {
     margin-bottom: 20px;
+  }
+
+  ol {
+    list-style-type: decimal;
+  }
+
+  ul {
+    list-style-type: disc;
+  }
+
+  li {
+    & + li {
+      margin-top: 3px;
+    }
+  }
+
+  strong {
+    font-style: italic;
   }
 }
 
