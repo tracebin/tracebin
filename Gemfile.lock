@@ -34,6 +34,8 @@ GEM
       activemodel (= 5.0.2)
       activesupport (= 5.0.2)
       arel (~> 7.0)
+    activerecord-import (0.18.1)
+      activerecord (>= 3.2)
     activesupport (5.0.2)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (~> 0.7)
@@ -223,6 +225,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord-import
   byebug
   capistrano
   capistrano-figaro-yml

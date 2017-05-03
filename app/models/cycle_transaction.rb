@@ -41,9 +41,10 @@ class CycleTransaction < ApplicationRecord
   def create_transaction_events
     return unless events.present?
 
-    events.values.flatten.each do |event|
-      params = event.merge({ cycle_transaction_id: self.id })
-      TransactionEvent.create params
+    event_params = events.values.flatten.map do |event|
+      event.merge({ cycle_transaction_id: self.id })
     end
+
+    TransactionEvent.import event_params
   end
 end

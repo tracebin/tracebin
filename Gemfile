@@ -28,6 +28,7 @@ source 'https://rails-assets.org' do
 end
 
 gem 'jbuilder', '~> 2.5'
+gem 'activerecord-import'
 gem 'redis', '~> 3.0'
 gem 'figaro'
 gem 'redcarpet'
