@@ -9,7 +9,7 @@ Tracebin takes the concept of "Bin" projects like [JS Bin](https://jsbin.com) an
 ## Part 1: The Agent
 Tracebin is composed of two components: the agent and the server. The agent is a language module that gets installed on an application server. The agent’s job is to gather raw performance information from the application and periodically send it to the server. Here are a few considerations we wanted to take into account when we set out to design our agent:
 
-1. **Footprint**: We wanted to be conscious of our application’s footprint, both in terms of memory usage, as well as runtime dependencies. With that in mind, we wanted to only load components that we need (as lazily as possible), and code as close to the metal as we can.
+1. **Footprint**: We wanted to be conscious of our application’s footprint, both in terms of memory usage, as well as runtime dependencies. With that in mind, we wanted to only load components that we need (as lazily as possible), and code as close to the metal as we can. Ruby clearly isn't the best language for this, but there is definitely some room for a native extension if Ruby proves to be too heavy after a while.
 2. **Performance Impact**: Obviously, we don’t want a tool that measures application performance to have its finger on the scale. Therefore, as a rule, we wanted our agent to handle most of its administrative tasks asynchronously. This includes loading and unloading data from storage, measuring system health metrics, as well as communicating with the server.
 3. **Transparency**: We wanted to create a set-it-and-forget-it style agent that doesn't require any extra engineering overhead to get it to work well.
 
@@ -229,13 +229,15 @@ At the other end of the normalization spectrum, we end up with a completely deno
 
 The `events` column stores an array of JSON objects, each of which contains all the data related for the event. With this, we end up with what is essentially a NoSQL datastore. We can’t perform direct JOINs and aggregates on that JSON column, which means the table we’re trying to obtain may be difficult. Thankfully, there are several functions in PostgreSQL that help us to convert JSON structures into virtual tables, which we do end up doing with some endpoints.
 
-Now, we could’ve used MongoDB all along if we wanted to structure our data like this! This also isn’t really the best schema for the table we’re trying to create, so let’s normalize out all events into their own table:
+This is the most NoSQL-esque schema we can make, and therefore we sacrifice a lot of what makes SQL useful and interesting. Furthermore, this is close to how we need it for the endpoints table. We'll see below that we take the "% SQL", "% View", etc. columns directly from data in the JSON column, allowing us to avoid using a JOIN. However, it'll be helpful to normalize out events into their own table for the waterfall diagram, so let's do that:
 
 [![Tracebin schema](/images/tracebin_db_schema_3.png)](/images/tracebin_db_schema_3.png)
 
 Here, we have columns for all the information common to each event type, and put the data unique to each event type in a JSON object. We also add a custom ENUM datatype to indicate the event’s type. This way, if we need to get information specific to a certain event, we just need to put that type in the `WHERE` clause of our query. Notice how we keep the `events` column in `Transactions`, giving us two representations of each event. We do this because, as we will see, some queries will be easier to perform on the JSON objects, while others will be much easier with the `Events` table.
 
-We must accept some tradeoffs with this model, and we’ll discuss these in the next section.
+One potential hazard with this model comes from the fact that we have the same data represented two different ways in two different places. This would be a major problem if we go to mutate this data, but these tables will not be used in this fashion. They will be written to once, and never modified.
+
+We must accept some additional tradeoffs with this model, and we’ll discuss these in the next section.
 
 #### Data Interchange
 Now that we have the first stages of our database schema, we need to account for how our data gets transmitted over the wire from the agent. For now, we’ve chosen JSON as our format to accomplish this.
@@ -300,23 +302,154 @@ Now that we’ve found an efficient way to persist our agent’s data, we need t
 
 We’re using two charting libraries for these charts: Datatables.net and the Google visualization library (now known as Google Charts). We chose them among the countless other charting libraries because they’re both flexible and take similar data structures as input. For each, we need an array of arrays, the elements of whom closely reflect the output. For Datatables (which we use for the Endpoints table), we just need to send data straight across to fill in the rows on the table. For Google Charts (which we use for the waterfall chart), the rows in the dataset reflect the size and positions of their respective bars.
 
+#### Building Queries
+
+Let's focus for a moment on the first table in the above screenshot, and explore how we can come to build the data for it. Here's an example of what the input for our endpoints table should look like--what our front end should receive from the server:
+
+```javascript
+// Columns: Endpoint, Hits, Median Response, Slow Response, % App, % SQL, % View, % Other
+[
+  ["VideosController#index", 14, 106.83, 157.74, 5.1, 6.08, 88.82, 0],
+  ["PagesController#front", 13, 3.48, 7.23, 83.65, 16.35, 0, 0],
+  ["UsersController#show", 10, 138.55, 260.27, 4.38, 13.74, 81.88, 0],
+  ["CategoriesController#show", 9, 110.68, 246.13, 5.2, 3.18, 91.62, 0],
+  ["VideosController#show", 9, 218.77, 624.61, 8.19, 7.95, 44.17, 39.7],
+  ["FollowingsController#index", 7, 119.62, 146.27, 6.01, 10.14, 83.85, 0]
+]
+```
+
 This array-of-arrays data structure lends itself to fairly easily pulling data straight from an SQL query’s output, allowing us to delegate most of the heavy computational lifting to the database engine, rather than the slower application layer.
 
-Here’s the first iteration of the query we use to generate the data for the “endpoints” table:
+To illustrate, let's see how to get each column for the endpoints table. The first four are fairly simple since, per the schema we illustrated above, we can pull those values straight from the the columns in the database.
 
 ```sql
 SELECT
   name AS endpoint,
+  count(*) AS hits,
+  quantile(duration, 0.5) AS median_duration,
+  quantile(duration, 0.95) AS ninety_fith_percentile_duration
+FROM transactions
+WHERE
+  app_bin_id = #{ActiveRecord::Base.sanitize @app_bin_id} AND
+  type = 'request_response' AND
+  start > (current_timestamp - interval '1 day')
+GROUP BY endpoint
+ORDER BY hits DESC;
+```
+
+`quantile` comes from an extension, which allows us to quickly compute the percentile of a given column. The `WHERE` clause identifies the transactions by the bin in question, type (we want `'request_response'`, as opposed to `'background_job'`), and time interval (since our app only shows 24 hours of data).
+
+The "% App", etc. columns are a little more tricky, and it might be useful to understand what they represent. For a web app, it's useful to know how much of a transaction is spent in each layer of the application. For example, we might spend just a little bit of time in the application itself, while the majority of time is spent rendering the view. These percentages will help us to show these characteristics at a glance.
+
+Pulling them directly from the database might be difficult, but we can instead compute averages in a query, and then compute the percentages on the application layer. Before the JSON object for a transaction's events is persisted, we do a little bit of organizing by type so that we don't have to iterate through the events at query time.
+
+```javascript
+// Before:
+
+{ // A Transaction object
+  "Name": "VideosController#show",
+  // Other transaction data...
+  "Events": [
+    {
+      "type": "sql",
+      "duration": 1.23,
+      // Other event data...
+    },
+    {
+      "type": "controller_action",
+      "duration": 85.23,
+      // Other event data
+    },
+    // etc...
+  ]
+}
+
+// After:
+
+{ // A Transaction object
+  "Name": "VideosController#show",
+  // Other transaction data...
+  "Events": {
+    "sql": [
+      {}, {} // SQL events
+    ],
+    "controller_action": [
+      {}, {} // Controller-action/Endpoint events
+    ],
+    // etc...
+  }
+}
+```
+
+Because of this, we can just run `events->'sql'` in our query if we want all of the SQL events, and so on. We probably didn't choose the best name for this key, since this is where all database queries would go, including NoSQL queries, but we can definitely change it later on.
+
+Let's think about this: we want the total duration for all SQL, View, etc. events for each endpoint. We then want to average them out so we can compute their percentages. Let's first sum up the durations for a single transaction's SQL events:
+
+```sql
+SELECT sum(duration)
+FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
+```
+
+We can use PostgreSQL's `jsonb_to_recordset` function (we're using a JSONB datatype, since it's much faster to query, and we can add indexes to values nested within it), which allows us to pull a JSON object's key/value pairs as a virtual table, with the keys represented as the columns. Since we're only interested in the duration, we can simply pull that value, and then sum up the rows.
+
+We then need to average those values over our entire dataset, so let's add it to our query.
+
+```sql
+SELECT
+  name AS endpoint,
+  count(*) AS hits,
   quantile(duration, 0.5) AS median_duration,
   quantile(duration, 0.95) AS ninety_fith_percentile_duration,
+  -- Here's the subquery from above
+  avg((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
+  )) AS avg_time_in_sql
+FROM transactions
+WHERE
+  app_bin_id = #{ActiveRecord::Base.sanitize @app_bin_id} AND
+  type = 'request_response' AND
+  start > (current_timestamp - interval '1 day')
+GROUP BY endpoint
+ORDER BY hits DESC;
+```
+
+Since that subquery returns a single value for each record, we can directly perform an aggregate on it. There is one problem here, though. Not all records necessarily have SQL events (thus our subquery will return `NULL` for them), and an aggregate function skips those rows. We therefore only get the average value for the transactions in which SQL events do occur. While this seems like something we may want, it will lead to problems when we go to compute the percentages. Say, for instance, an endpoint performs an SQL query only once every 100 executions. For the non-SQL executions, the duration of the transaction is 50ms, and for the executions with the SQL query, it takes 500ms. With our current query, the average time in SQL will be 450ms, while the average time in the App layer (since the app layer is computed with each execution, SQL or no) will be closer to 50ms. When the percentage is computed, we end up with negative numbers.
+
+Therefore, we want to "fill in" the NULL values with zeroes, which we can do with PostgreSQL's `coalesce` function, which returns the first non-null value from its arguments. Here's what we get:
+
+```sql
+SELECT
+  name AS endpoint,
   count(*) AS hits,
+  quantile(duration, 0.5) AS median_duration,
+  quantile(duration, 0.95) AS ninety_fith_percentile_duration,
+  avg(coalesce((
+    SELECT sum(duration)
+    FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
+  ), 0)) AS avg_time_in_sql
+FROM transactions
+WHERE
+  app_bin_id = #{ActiveRecord::Base.sanitize @app_bin_id} AND
+  type = 'request_response' AND
+  start > (current_timestamp - interval '1 day')
+GROUP BY endpoint
+ORDER BY hits DESC;
+```
+
+We just need to repeat this pattern for each of the percentage columns. Here’s the first iteration of what we get:
+
+```sql
+SELECT
+  name AS endpoint,
+  count(*) AS hits,
+  quantile(duration, 0.5) AS median_duration,
+  quantile(duration, 0.95) AS ninety_fith_percentile_duration,
   avg(coalesce((
     SELECT sum(duration)
     FROM jsonb_to_recordset(events->'sql') AS x(duration NUMERIC)
   ), 0)) AS avg_time_in_sql,
   avg(coalesce((
-    -- View events happen within each other, so we just need to take the
-    -- highest value here.
     SELECT max(duration) - (
       SELECT sum(duration)
       FROM
@@ -348,9 +481,9 @@ GROUP BY endpoint
 ORDER BY hits DESC;
 ```
 
-This generates almost what we need to fill in the chart. The only missing pieces, such as the percentages, can be quickly formatted on the application layer. Notice how we are able to directly locate the transaction’s events by type. This is because we perform an operation at the time of creation to organize them in this fashion.
+We need to some additional computation with the "View" column, since it may be the case that SQL events happen while a View event is running. For that, we just need to subtract out those SQL events.
 
-There is one major issue with this query: it is extremely slow (i.e., on the scale of seconds) when when the dataset gets reasonably large. This is due to the fact that we’re averaging over the entire dataset multiple times, with each record generating a set of at least five virtual tables.
+There is one major issue with this query: it is extremely slow when when the dataset gets reasonably large (For instance, once we hit about 1000 records, the entire thing takes about a second to execute. After 10000 records, it lasts 10 seconds and grows roughly linearly from that). This is due to the fact that we’re averaging over the entire dataset multiple times, with each record generating a set of at least five virtual tables.
 
 We are in the process of curbing this by computing most of these values ahead of time. For example, we could add columns to the Transactions table where we compute the values for SQL/View/etc. time, thus curtailing the need for those virtual tables. We have to be careful, however, since this would add some time to our data intake workflow. This may be negligible for less complicated transactions, but it’s worth it to consider transactions with hundreds of events.
 
