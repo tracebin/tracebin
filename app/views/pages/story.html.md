@@ -206,18 +206,16 @@ How, then, should this data be organized? We have many decisions to make for thi
 #### SQL or Not?
 Our service seems like the core target for many NoSQL databases, particularly MongoDB and Cassandra. They excel in write-heavy applications with predefined query paths, sacrificing flexibility for QPS. They are extremely performant, as long as you work with their constraints. Since interactions with our application are fairly constant (that is, user interaction is constrained and predictable), NoSQL stood as a fairly solid choice.
 
-However, we decided to stick with SQL—namely, PostgreSQL—for the current iteration of our service for the following reasons. First, our current knowledge of SQL far exceeds that of other databases, so ended up being a little more time-efficient to wrangle with any of SQL’s shortcomings that might pop up than it would be to learn a new database.
+However, we decided to stick with SQL—namely, PostgreSQL—for the current iteration of our service for the following reasons. First, since our app revolves around finding ways to query our data for analytics, we want to optimize for queryability. PostgreSQL’s robust set of features especially shines in this respect, with numerous datatype options and robust extensions ecosystem. With virtual tables, SQL provides us with a more intuitive mental model for understanding our datasets, and it allows us to conjure up data based on what we need. PostgreSQL itself also gives us a little more flexibility on how we choose to represent our data. This will prove especially useful later on in our exploration.
 
-The more interesting reasons involved a single concept: queryability. PostgreSQL’s robust set of features especially shines in this respect, with numerous datatype options and robust extensions ecosystem. With virtual tables, SQL provides us with a more intuitive mental model for understanding our datasets, and it allows us to conjure up data based on what we need. PostgreSQL itself also gives us a little more flexibility on how we choose to represent our data. This will prove especially useful later on in our exploration.
-
-Here’s the big takeaway, which has been the main theme for the database decisions we’ve made throughout this process: we want to store the data in a way that lends it self to how we plan to query it. Not only do SQL databases provide us with several additional degrees of freedom for the kinds of queries we plan to make, but they, especially PostgreSQL, allow us to perform more complicated aggregate operations closer to the database than other solutions, at least with our current level of knowledge.
+Here’s the big takeaway, which has been the main theme for the database decisions we’ve made throughout this process: we want to store the data in a way that lends it self to how we plan to query it. Not only do SQL databases provide us with several additional degrees of freedom for the kinds of queries we plan to make, but they, especially PostgreSQL, allow us to perform more complicated aggregate operations closer to the database than other solutions.
 
 #### The Schema Dilemma: How normalized are your tables?
 With our current model, we have two basic entity types: transactions and events. They exist in a one-to-many relationship. Events can be subdivided into three or four categories, each with their own kinds of attributes. For example, database operations don’t have the same kinds of characteristics as controller actions. Therefore, we might imagine a schema in which we have separate tables for each event type.
 
 [![Tracebin schema](/images/tracebin_db_schema_1.png)](/images/tracebin_db_schema_1.png)
 
-Missing from There are a few problems with this. First, while this schema provides a great deal of flexibility, it comes at a cost of performance, especially when we keep in mind how we plan to query this data. With this in mind, it helps to recognize what kind of data we want from these tables. Here’s an example of the output we’re expecting:
+There are a few problems with this. First, while this schema provides a great deal of flexibility, it comes at a cost of performance, especially when we keep in mind how we plan to query this data. With this in mind, it helps to recognize what kind of data we want from these tables. Here’s an example of the output we’re expecting:
 
 [![Tracebin schema](/images/tracebin_output_endpoints_index.png)](/images/tracebin_output_endpoints_index.png)
 
@@ -227,7 +225,7 @@ At the other end of the normalization spectrum, we end up with a completely deno
 
 [![Tracebin schema](/images/tracebin_db_schema_2.png)](/images/tracebin_db_schema_2.png)
 
-The `events` column stores an array of JSON objects, each of which contains all the data related for the event. With this, we end up with what is essentially a NoSQL datastore. We can’t perform direct JOINs and aggregates on that JSON column, which means the table we’re trying to obtain may be difficult. Thankfully, there are several functions in PostgreSQL that help us to convert JSON structures into virtual tables, which we do end up doing with some endpoints.
+The `events` column stores an array of JSON objects, each of which contains all the data related for the event. With this, we end up with what is essentially a NoSQL datastore. We can’t perform direct JOINs and aggregates on that JSON column, which means the data we’re trying to obtain may be difficult. Thankfully, there are several functions in PostgreSQL that help us to convert JSON structures into virtual tables, which we do end up doing with some endpoints.
 
 This is the most NoSQL-esque schema we can make, and therefore we sacrifice a lot of what makes SQL useful and interesting. Furthermore, this is close to how we need it for the endpoints table. We'll see below that we take the "% SQL", "% View", etc. columns directly from data in the JSON column, allowing us to avoid using a JOIN. However, it'll be helpful to normalize out events into their own table for the waterfall diagram, so let's do that:
 
@@ -259,7 +257,7 @@ Per above, all data gets sent in an array of JSON objects. Each object needs to 
 }
 ```
 
-One consideration to make when choosing how our data should be transmitted is computation location and strategy. To understand this challenge, let’s go back to our mantra: data must be persisted to reflect how it will be queried. The raw data collected by our agent comes in pieces that aren’t extremely useful for presenting our data. For instance, `name` and `duration` must be computed, since they aren’t present. Any computed data like this must be computed on either the side of the agent or the server. Since we don’t want to impact the host application’s performance with extra computational tasks, we let the server handle most tasks, with the exception of computing `duration` and `type`, both of which can be completed in synchronously in a reasonable amount of time.
+One consideration to make when choosing how our data should be transmitted is computation location and strategy. To understand this challenge, let’s go back to our mantra: data must be persisted to reflect how it will be queried. The raw data collected by our agent comes in pieces that aren’t extremely useful for presenting our data. For instance, `name` and `duration` must be computed, since they aren’t present. Any computed data like this must be computed on either the side of the agent or the server. Since we don’t want to impact the host application’s performance with extra computational tasks, we let the server handle most tasks, with the exception of computing `duration` and `type`, both of which can be completed synchronously in a reasonable amount of time.
 
 One thing do on the server side is organize the “events” JSON array by event type, spanning across four categories: endpoint, database, view, and other. This allows us to more easily generate runtime profiles like the one below:
 
