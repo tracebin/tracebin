@@ -1,8 +1,8 @@
 # Our Story
 
-We are [Tyler Guillen](http://tylerguillen.com) and [Konstantin Minevskiy](http://minevskiy.com), two software developers who met through [Launch School](https://launchschool.com) and decided to pair on a project together. We set out to make a fast and easy way for a developer to keep a finger on the pulse of their web application, with minimal configuration and setup. Four weeks and many cups of coffee later, Tracebin was born. This is the story of the development process of Tracebin.
+We are a small team of developers led by [Tyler Guillen](http://tylerguillen.com), who met through [Launch School](https://launchschool.com) and decided to work on a project together. We set out to make a fast and easy way for a developer to keep a finger on the pulse of their web application, with minimal configuration and setup. Several pots of coffee later, Tracebin was born. This is the story of the development process of Tracebin.
 
-http://youtube/xLA8-4jcUoI
+http://youtube/wDAnzM4PSPg
 
 [![Tracebin screenshot](/images/tracebin_screenshot_1.png)](/images/tracebin_screenshot_1.png)
 
