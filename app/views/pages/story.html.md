@@ -2,6 +2,8 @@
 
 We are [Tyler Guillen](http://tylerguillen.com) and [Konstantin Minevskiy](http://minevskiy.com), two software developers who met through [Launch School](https://launchschool.com) and decided to pair on a project together. We set out to make a fast and easy way for a developer to keep a finger on the pulse of their web application, with minimal configuration and setup. Four weeks and many cups of coffee later, Tracebin was born. This is the story of the development process of Tracebin.
 
+http://youtube/xLA8-4jcUoI
+
 [![Tracebin screenshot](/images/tracebin_screenshot_1.png)](/images/tracebin_screenshot_1.png)
 
 Tracebin takes the concept of "Bin" projects like [JS Bin](https://jsbin.com) and [RequestBin](https://requestb.in) and applies it to application performance monitoring. The developer creates a "bin," installs our agent, and Tracebin collects various performance metrics to help detect slow endpoints, background jobs, and other common performance issues. We wrote a Ruby agent to begin with, but plan to expand our platform to Python and JavaScript in the future. Therefore, while most of this article will contain code in Ruby, it can mostly be generalized to any language that runs a web application.

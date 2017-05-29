@@ -19,7 +19,7 @@ class MarkdownHandler
     end
 
     def markdown
-      @markdown ||= Redcarpet::Markdown.new(HTMLWithPygments, fenced_code_blocks: true, autolink: true, space_after_headers: true)
+      @markdown ||= Redcarpet::Markdown.new(HTMLWithSpecialLinks, fenced_code_blocks: true, autolink: true, space_after_headers: true)
     end
 
     def erb
@@ -38,6 +38,36 @@ class MarkdownHandler
     def add_code_tags(code, lang)
       code = code.sub(/<pre>/,'<pre><code class="' + lang + '">')
       code = code.sub(/<\/pre>/,"</code></pre>")
+    end
+  end
+
+  class HTMLWithSpecialLinks < HTMLWithPygments
+    def autolink(link, link_type)
+      case link_type
+        when :url then url_link(link)
+        when :email then email_link(link)
+      end
+    end
+
+    def url_link(link)
+      case link
+        when /^http:\/\/youtube/ then youtube_link(link)
+        else normal_link(link)
+      end
+    end
+
+    def youtube_link(link)
+      parameters_start = link.index('?')
+      video_id = link[15..(parameters_start ? parameters_start-1 : -1)]
+      "<div class=\"vid-embed\"><iframe width=\"560\" height=\"315\" src=\"//www.youtube.com/embed/#{video_id}?rel=0\" frameborder=\"0\" allowfullscreen></iframe></div>"
+    end
+
+    def normal_link(link)
+      "<a href=\"#{link}\">#{link}</a>"
+    end
+
+    def email_link(email)
+      "<a href=\"mailto:#{email}\">#{email}</a>"
     end
   end
 end
