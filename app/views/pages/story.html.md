@@ -1,6 +1,8 @@
-# Our Story
+# How we built a simple, lightweight APM service from scratch
 
-We are a small team of developers led by [Tyler Guillen](http://tylerguillen.com), who met through [Launch School](https://launchschool.com) and decided to work on a project together. We set out to make a fast and easy way for a developer to keep a finger on the pulse of their web application, with minimal configuration and setup. Several pots of coffee later, Tracebin was born. This is the story of the development process of Tracebin.
+We are a small team of developers led by [Tyler Guillen](http://tylerguillen.com), who met through [Launch School](https://launchschool.com) and decided to work on a project together. Tyler is looking for work in the San Francisco Bay Area! Point your browser to his website to check him out!
+
+We set out to make a fast and easy way for a developer to keep a finger on the pulse of their web application, with minimal configuration and setup. Several pots of coffee later, Tracebin was born. This is the story of the development process of Tracebin.
 
 http://youtube/wDAnzM4PSPg
 
