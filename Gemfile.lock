@@ -127,7 +127,7 @@ GEM
       slop (~> 3.4)
     puma (3.8.2)
     pygmentize (0.0.3)
-    rack (2.0.1)
+    rack (2.2.3)
     rack-protection (1.5.3)
       rack
     rack-test (0.6.3)
